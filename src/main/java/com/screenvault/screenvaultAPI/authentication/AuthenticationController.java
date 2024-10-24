@@ -17,7 +17,7 @@ public class AuthenticationController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponseBody> login(
-            @RequestBody User request
+            @RequestHeader("Authorization") String basicAuthorizationHeader
     ) {
         return null;
     }

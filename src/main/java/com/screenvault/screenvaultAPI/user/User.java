@@ -16,13 +16,13 @@ public class User implements UserDetails {
     private UserRole role;
     private UserStatus status;
 
-    public User() {};
-
-    public User(UUID id, String username, String login, String password) {
+    public User(UUID id, String username, String login, String password, UserRole role, UserStatus status) {
         this.id = id;
         this.username = username;
         this.login = login;
         this.password = password;
+        this.role = role;
+        this.status = status;
     }
 
     @Override
@@ -82,4 +82,19 @@ public class User implements UserDetails {
         this.password = password;
     }
 
+    public UserRole getRole() {
+        return role;
+    }
+
+    public void setRole(UserRole role) {
+        this.role = role;
+    }
+
+    public UserStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(UserStatus status) {
+        this.status = status;
+    }
 }

@@ -2,15 +2,22 @@ package com.screenvault.screenvaultAPI.authentication;
 
 
 import com.screenvault.screenvaultAPI.jwt.JwtService;
-import com.screenvault.screenvaultAPI.user.UserRepository;
 import com.screenvault.screenvaultAPI.user.User;
+import com.screenvault.screenvaultAPI.user.UserRepository;
+import com.screenvault.screenvaultAPI.user.UserRole;
+import com.screenvault.screenvaultAPI.user.UserStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Base64;
+
 @Service
 public class AuthenticationService {
+
+    private final static String BASIC_PREFIX = "Basic ";
+
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
@@ -28,21 +35,31 @@ public class AuthenticationService {
         this.authenticationManager = authenticationManager;
     }
 
-    // TODO: finish this
     public RegisterResponseBody register(User request) {
 
-        User user = new User();
-        user.setUsername(request.getUsername());
-        user.setLogin(request.getLogin());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        User user = new User(
+            null,
+            request.getUsername(),
+            request.getLogin(),
+            passwordEncoder.encode(request.getPassword()),
+            UserRole.USER,
+            UserStatus.ACTIVE
+        );
 
         userRepository.save(user);
 
         return new RegisterResponseBody();
     }
 
-    // TODO: finish this
-    public LoginResponseBody authenticate(User request) {
+    public LoginResponseBody authenticate(String basicAuthorizationHeader) {
+        String[] split = new String(Base64.getDecoder().decode(basicAuthorizationHeader))
+                .substring(BASIC_PREFIX.length())
+                .split(":");
+
+        if (split.length != 2) throw new IllegalArgumentException("Invalid basic auth header");
+
+        User request = new User(null, null, split[0], split[1], null, null);
+
         // If this throws then authentication failed and controller will send out 403
         authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(

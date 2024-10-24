@@ -1,23 +1,24 @@
 package com.screenvault.screenvaultAPI.user;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 
+@Document("user")
 public class User implements UserDetails {
-    private UUID id;
     private String username;
+    @Id
     private String login;
     private String password;
     private UserRole role;
     private UserStatus status;
 
-    public User(UUID id, String username, String login, String password, UserRole role, UserStatus status) {
-        this.id = id;
+    public User(String username, String login, String password, UserRole role, UserStatus status) {
         this.username = username;
         this.login = login;
         this.password = password;
@@ -48,14 +49,6 @@ public class User implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.name()));
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
     }
 
     public String getUsername() {

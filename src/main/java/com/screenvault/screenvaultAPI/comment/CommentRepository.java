@@ -1,13 +1,12 @@
 package com.screenvault.screenvaultAPI.comment;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
+import java.util.List;
 import java.util.UUID;
 
-public interface CommentRepository extends PagingAndSortingRepository<Comment, UUID> {
+public interface CommentRepository extends MongoRepository<Comment, UUID> {
 
-    Page<Comment> findAllByPostId(UUID postId, Pageable pageable);
+    List<Comment> findAllById(UUID postId);
 
 }

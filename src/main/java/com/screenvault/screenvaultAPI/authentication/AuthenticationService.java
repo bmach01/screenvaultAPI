@@ -38,7 +38,6 @@ public class AuthenticationService {
     public RegisterResponseBody register(User request) {
 
         User user = new User(
-            null,
             request.getUsername(),
             request.getLogin(),
             passwordEncoder.encode(request.getPassword()),
@@ -58,7 +57,7 @@ public class AuthenticationService {
 
         if (split.length != 2) throw new IllegalArgumentException("Invalid basic auth header");
 
-        User request = new User(null, null, split[0], split[1], null, null);
+        User request = new User(null, split[0], split[1], null, null);
 
         // If this throws then authentication failed and controller will send out 403
         authenticationManager.authenticate(

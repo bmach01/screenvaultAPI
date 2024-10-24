@@ -18,11 +18,10 @@ repositories {
 }
 
 dependencies {
-	implementation("io.springfox:springfox-swagger2:3.0.0")
-	implementation("io.springfox:springfox-swagger-ui:3.0.0")
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0") // http://<server>:<port>/swagger-ui.html
 	implementation("io.jsonwebtoken:jjwt-api:0.12.6")
 
-	implementation("org.springframework.boot:spring-boot-starter-data-cassandra")
+	implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")

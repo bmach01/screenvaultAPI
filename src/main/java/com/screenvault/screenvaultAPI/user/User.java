@@ -11,8 +11,9 @@ import java.util.List;
 
 @Document("user")
 public class User implements UserDetails {
-    private String username;
+
     @Id
+    private String username;
     private String login;
     private String password;
     private UserRole role;

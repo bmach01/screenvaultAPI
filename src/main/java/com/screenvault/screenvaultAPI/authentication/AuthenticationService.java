@@ -45,9 +45,15 @@ public class AuthenticationService {
             UserStatus.ACTIVE
         );
 
+        if (userRepository.findByUsername(request.getUsername()) != null)
+            return new RegisterResponseBody("Username taken.", null);
+
+        if (userRepository.findByLogin(request.getLogin()) != null)
+            return new RegisterResponseBody("This email has an account bound to it.", null);
+
         userRepository.save(user);
 
-        return new RegisterResponseBody();
+        return new RegisterResponseBody("Account created successfully.", user);
     }
 
     public LoginResponseBody authenticate(String basicAuthorizationHeader) {

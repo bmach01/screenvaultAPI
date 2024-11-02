@@ -51,7 +51,7 @@ public class AuthenticationService {
         return new RegisterResponseBody("Account created successfully.", user);
     }
 
-    public LoginResponseDTO login(String basicAuthorizationHeader) {
+    public TokensResponseDTO login(String basicAuthorizationHeader) {
         if (!basicAuthorizationHeader.startsWith(BASIC_PREFIX))
             throw new IllegalArgumentException("Invalid Authorization header format.");
 
@@ -64,11 +64,23 @@ public class AuthenticationService {
         User user = userRepository.findByLogin(split[0]);
         // Invalid credentials
         if (user == null)
-            return new LoginResponseDTO("Invalid credentials.", null, null);
+            return new TokensResponseDTO("Invalid credentials.", null, null);
 
         String token = jwtService.generateToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
 
-        return new LoginResponseDTO("Successfully authenticated.", token, refreshToken);
+        return new TokensResponseDTO("Successfully authenticated.", token, refreshToken);
+    }
+
+    public TokensResponseDTO refreshToken(String refreshToken) {
+        User user = userRepository.findByUsername(jwtService.extractUsername(refreshToken));
+
+        if (user == null)
+            return new TokensResponseDTO("Invalid refresh token.", null, null);
+
+        if (jwtService.isValidRefreshToken(refreshToken, user))
+            return new TokensResponseDTO("Successfully refreshed token.", jwtService.generateToken(user), null);
+
+        return new TokensResponseDTO("Refresh token may have expired.", null, null);
     }
 }

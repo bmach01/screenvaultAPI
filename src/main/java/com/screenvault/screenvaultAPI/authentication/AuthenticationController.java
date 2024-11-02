@@ -1,6 +1,10 @@
 package com.screenvault.screenvaultAPI.authentication;
 
+import com.screenvault.screenvaultAPI.jwt.JwtType;
 import com.screenvault.screenvaultAPI.user.User;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,10 +31,27 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseBody> login(
-            @RequestHeader("Authorization") String basicAuthorizationHeader
+    public ResponseEntity<String> login(
+            @RequestHeader("Authorization") String basicAuthorizationHeader,
+            HttpServletResponse response
     ) {
-        return null;
+        LoginResponseDTO data = authenticationService.login(basicAuthorizationHeader);
+
+        // Invalid credentials
+        if (data.token() == null || data.refreshToken() == null) {
+            return new ResponseEntity<>(data.message(), HttpStatus.UNAUTHORIZED);
+        }
+
+        Cookie tokenCookie = new Cookie(JwtType.TOKEN.name(), data.token());
+        tokenCookie.setHttpOnly(true);
+
+        Cookie refreshCookie = new Cookie(JwtType.REFRESH_TOKEN.name(), data.refreshToken());
+        refreshCookie.setHttpOnly(true);
+
+        response.addCookie(tokenCookie);
+        response.addCookie(refreshCookie);
+
+        return ResponseEntity.ok(data.message());
     }
 
     @GetMapping("/refreshToken")

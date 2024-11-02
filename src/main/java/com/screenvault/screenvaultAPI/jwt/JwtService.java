@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
-import java.util.function.Function;
 
 @Service
 public class JwtService {
@@ -17,6 +16,7 @@ public class JwtService {
     private String getSecretKey() {
         return System.getenv("SCREENVAULT_JWT_SECRET_KEY");
     }
+    private final String jwtTypeClaim = "TYPE";
 
     public String generateToken(User user) {
         return Jwts.builder()
@@ -24,6 +24,17 @@ public class JwtService {
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + 5 * 60 * 1000))
                 .signWith(getSigningKey())
+                .claim(jwtTypeClaim, JwtType.TOKEN)
+                .compact();
+    }
+
+    public String generateRefreshToken(User user) {
+        return Jwts.builder()
+                .subject(user.getUsername())
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000))
+                .signWith(getSigningKey())
+                .claim(jwtTypeClaim, JwtType.REFRESH_TOKEN)
                 .compact();
     }
 
@@ -32,26 +43,30 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
-    }
-
-    public boolean isValid(String token, User user) {
-        String username = extractUsername(token);
-        return username.equals(user.getUsername()) && !isTokenExpired(token);
-    }
-
-    private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
-    }
-
-    private Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
-    }
-
-    private  <T> T extractClaim(String token, Function<Claims, T> resolver) {
+    public boolean isValidToken(String token, User user) {
         Claims claims = extractAllClaims(token);
-        return resolver.apply(claims);
+
+        String username = claims.getSubject();
+
+        return username.equals(user.getUsername()) && isNotExpired(claims.getExpiration());
+    }
+
+    public boolean isValidRefreshToken(String token, User user) {
+        Claims claims = extractAllClaims(token);
+
+        String username = claims.getSubject();
+
+        return username.equals(user.getUsername()) &&
+                isNotExpired(claims.getExpiration()) &&
+                claims.get(jwtTypeClaim) == JwtType.REFRESH_TOKEN;
+    }
+
+    public String extractUsername(String token) {
+        return extractAllClaims(token).getSubject();
+    }
+
+    private boolean isNotExpired(Date expirationDate) {
+        return !expirationDate.before(new Date());
     }
 
     private Claims extractAllClaims(String token) {

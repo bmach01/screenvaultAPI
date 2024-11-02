@@ -21,7 +21,7 @@ public class JwtService {
     public String generateToken(User user) {
         return Jwts.builder()
                 .subject(user.getUsername())
-                .issuedAt(new Date(System.currentTimeMillis()))
+                .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + 5 * 60 * 1000))
                 .signWith(getSigningKey())
                 .claim(jwtTypeClaim, JwtType.TOKEN)
@@ -31,7 +31,7 @@ public class JwtService {
     public String generateRefreshToken(User user) {
         return Jwts.builder()
                 .subject(user.getUsername())
-                .issuedAt(new Date(System.currentTimeMillis()))
+                .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000))
                 .signWith(getSigningKey())
                 .claim(jwtTypeClaim, JwtType.REFRESH_TOKEN)
@@ -48,7 +48,9 @@ public class JwtService {
 
         String username = claims.getSubject();
 
-        return username.equals(user.getUsername()) && isNotExpired(claims.getExpiration());
+        return username.equals(user.getUsername()) &&
+                isNotExpired(claims.getExpiration()) &&
+                JwtType.valueOf((String)claims.get(jwtTypeClaim)) == JwtType.TOKEN;
     }
 
     public boolean isValidRefreshToken(String token, User user) {
@@ -58,7 +60,7 @@ public class JwtService {
 
         return username.equals(user.getUsername()) &&
                 isNotExpired(claims.getExpiration()) &&
-                claims.get(jwtTypeClaim) == JwtType.REFRESH_TOKEN;
+                JwtType.valueOf((String)claims.get(jwtTypeClaim)) == JwtType.REFRESH_TOKEN;
     }
 
     public String extractUsername(String token) {
@@ -66,7 +68,7 @@ public class JwtService {
     }
 
     private boolean isNotExpired(Date expirationDate) {
-        return !expirationDate.before(new Date());
+        return expirationDate.after(new Date());
     }
 
     private Claims extractAllClaims(String token) {

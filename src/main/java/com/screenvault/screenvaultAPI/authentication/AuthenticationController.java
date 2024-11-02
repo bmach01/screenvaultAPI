@@ -35,7 +35,7 @@ public class AuthenticationController {
             @RequestHeader("Authorization") String basicAuthorizationHeader,
             HttpServletResponse response
     ) {
-        LoginResponseDTO data = authenticationService.login(basicAuthorizationHeader);
+        TokensResponseDTO data = authenticationService.login(basicAuthorizationHeader);
 
         // Invalid credentials
         if (data.token() == null || data.refreshToken() == null) {
@@ -56,8 +56,18 @@ public class AuthenticationController {
 
     @GetMapping("/refreshToken")
     public ResponseEntity<String> refreshToken(
-            @RequestBody String token
+            // JwtType.REFRESH_TOKEN.name() <-- annotation can't use variable value
+            @CookieValue("REFRESH_TOKEN") String refreshToken,
+            HttpServletResponse response
     ) {
-        return null;
+        TokensResponseDTO data = authenticationService.refreshToken(refreshToken);
+
+        if (data.token() == null) return new ResponseEntity<>(data.message() , HttpStatus.UNAUTHORIZED);
+
+        Cookie tokenCookie = new Cookie(JwtType.TOKEN.name(), data.token());
+        tokenCookie.setHttpOnly(true);
+        response.addCookie(tokenCookie);
+
+        return  ResponseEntity.ok(data.message());
     }
 }

@@ -14,10 +14,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         this.repository = repository;
     }
 
-    // We want to look by login but framework forces us to do this by username (which are different fields in this case)
-    // That's why here even though function says 'load by username', internally it searches by login.
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return repository.findByLogin(username);
+        return repository.findByUsername(username);
     }
 }

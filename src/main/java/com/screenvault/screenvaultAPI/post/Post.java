@@ -5,6 +5,7 @@ import com.screenvault.screenvaultAPI.rating.Rating;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -19,6 +20,7 @@ public class Post {
     private int score;
     private int commentCount;
     private int viewCount;
+    private Date postedOn;
     private Set<String> tags;
     private Rating.Score myScore;
     private List<Comment> comments; // present only in Post details

@@ -1,8 +1,8 @@
 package com.screenvault.screenvaultAPI.post;
 
-public class GetPostsRequestBody {
-    private int page;
-    private int pageSize;
-    private String title;
-    private String tag;
-}
+public record GetPostsRequestBody (
+    int page,
+    int pageSize,
+    String title,
+    String tag
+) {}

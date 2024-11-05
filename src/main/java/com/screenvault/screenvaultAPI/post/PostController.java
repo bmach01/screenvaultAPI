@@ -9,12 +9,26 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/post")
 public class PostController {
 
+    private final PostService postService;
+
+    public PostController(PostService postService) {
+        this.postService = postService;
+    }
+
     @GetMapping("/getLandingPagePosts")
     public ResponseEntity<Page<Post>> getLandingPagePosts(
             @RequestBody GetPostsRequestBody requestBody,
             @Nullable @RequestHeader("Authorization") String requestAuthorizationHeader
     ) {
-        return null;
+        Page<Post> posts = postService.getLandingPagePostsPage(requestBody.page(), requestBody.pageSize());
+
+        if (posts == null) return ResponseEntity.notFound().build();
+
+        if (requestAuthorizationHeader != null) {
+            postService.addUserRatingToPosts(requestAuthorizationHeader, posts);
+        }
+
+        return ResponseEntity.ok(posts);
     }
 
     @GetMapping("/getPostsByTitles")
@@ -22,7 +36,15 @@ public class PostController {
             @RequestBody GetPostsRequestBody requestBody,
             @Nullable @RequestHeader("Authorization") String requestAuthorizationHeader
     ) {
-        return null;
+        Page<Post> posts = postService.getLandingPagePostsPage(requestBody.page(), requestBody.pageSize());
+
+        if (posts == null) return ResponseEntity.notFound().build();
+
+        if (requestAuthorizationHeader != null) {
+            postService.addUserRatingToPosts(requestAuthorizationHeader, posts);
+        }
+
+        return ResponseEntity.ok(posts);
     }
 
     @GetMapping("/getPostsByTags")

@@ -9,6 +9,9 @@ import java.util.UUID;
 public interface RatingRepository extends MongoRepository<Rating, UUID> {
 
     @Nullable
+    List<Rating> findByPosterUsernameAndPostIdIn(String posterUsername, List<UUID> postIds);
+
+    @Nullable
     List<Rating> findByPosterUsernameAndPostId(String posterUsername, UUID postId);
 
 }

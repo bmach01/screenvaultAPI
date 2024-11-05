@@ -18,14 +18,15 @@ public class PostController {
     @GetMapping("/getLandingPagePosts")
     public ResponseEntity<Page<Post>> getLandingPagePosts(
             @RequestBody GetPostsRequestBody requestBody,
-            @Nullable @RequestHeader("Authorization") String requestAuthorizationHeader
+            // JwtType.TOKEN.name()
+            @Nullable @CookieValue("TOKEN") String token
     ) {
         Page<Post> posts = postService.getLandingPagePostsPage(requestBody.page(), requestBody.pageSize());
 
-        if (posts == null) return ResponseEntity.notFound().build();
+        if (posts == null || posts.isEmpty()) return ResponseEntity.notFound().build();
 
-        if (requestAuthorizationHeader != null) {
-            postService.addUserRatingToPosts(requestAuthorizationHeader, posts);
+        if (token != null) {
+            postService.addUserRatingToPosts(token, posts);
         }
 
         return ResponseEntity.ok(posts);
@@ -34,14 +35,15 @@ public class PostController {
     @GetMapping("/getPostsByTitles")
     public ResponseEntity<Page<Post>> getPostsByTitles(
             @RequestBody GetPostsRequestBody requestBody,
-            @Nullable @RequestHeader("Authorization") String requestAuthorizationHeader
+            // JwtType.TOKEN.name()
+            @Nullable @CookieValue("TOKEN") String token
     ) {
-        Page<Post> posts = postService.getLandingPagePostsPage(requestBody.page(), requestBody.pageSize());
+        Page<Post> posts = postService.getPostsByTitle(requestBody.title(), requestBody.page(), requestBody.pageSize());
 
-        if (posts == null) return ResponseEntity.notFound().build();
+        if (posts == null || posts.isEmpty()) return ResponseEntity.notFound().build();
 
-        if (requestAuthorizationHeader != null) {
-            postService.addUserRatingToPosts(requestAuthorizationHeader, posts);
+        if (token != null) {
+            postService.addUserRatingToPosts(token, posts);
         }
 
         return ResponseEntity.ok(posts);
@@ -50,17 +52,31 @@ public class PostController {
     @GetMapping("/getPostsByTags")
     public ResponseEntity<Page<Post>> getPostsByTags(
             @RequestBody GetPostsRequestBody requestBody,
-            @Nullable @RequestHeader("Authorization") String requestAuthorizationHeader
+            // JwtType.TOKEN.name()
+            @Nullable @CookieValue("TOKEN") String token
     ) {
-        return null;
+        Page<Post> posts = postService.getPostsByTags(requestBody.tags(), requestBody.page(), requestBody.pageSize());
+
+        if (posts == null || posts.isEmpty()) return ResponseEntity.notFound().build();
+
+        if (token != null) {
+            postService.addUserRatingToPosts(token, posts);
+        }
+
+        return ResponseEntity.ok(posts);
     }
 
     @PostMapping("/uploadPost")
-    public ResponseEntity<Page<Post>> uploadPost(
+    public ResponseEntity<Post> uploadPost(
             @RequestBody PostPostRequestBody requestBody,
-            @Nullable @RequestHeader("Authorization") String requestAuthorizationHeader
+            // JwtType.TOKEN.name()
+            @Nullable @CookieValue("TOKEN") String token
     ) {
-        return null;
+        Post savedPost = postService.savePost(requestBody.post(), requestBody.isPublic())
+        if (savedPost != null) {
+            return ResponseEntity.ok(savedPost);
+        }
+        return ResponseEntity.badRequest().build();
     }
 
 }

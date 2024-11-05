@@ -24,29 +24,21 @@ public class Post {
     private Set<String> tags;
     private Rating.Score myScore;
     private List<Comment> comments; // present only in Post details
+    private boolean isPublic; // for faster search
 
-    public Post(
-        UUID id,
-        String title,
-        String image,
-        String posterUsername,
-        int score,
-        int commentCount,
-        int viewCount,
-        Set<String> tags,
-        Rating.Score myScore,
-        List<Comment> comments
-    ) {
+    public Post(UUID id, String title, String imageUrl, String posterUsername, int score, int commentCount, int viewCount, Date postedOn, Set<String> tags, Rating.Score myScore, List<Comment> comments, boolean isPublic) {
         this.id = id;
         this.title = title;
-        this.imageUrl = image;
+        this.imageUrl = imageUrl;
         this.posterUsername = posterUsername;
         this.score = score;
         this.commentCount = commentCount;
         this.viewCount = viewCount;
+        this.postedOn = postedOn;
         this.tags = tags;
         this.myScore = myScore;
         this.comments = comments;
+        this.isPublic = isPublic;
     }
 
     public UUID getId() {
@@ -127,5 +119,21 @@ public class Post {
 
     public void setComments(List<Comment> comments) {
         this.comments = comments;
+    }
+
+    public Date getPostedOn() {
+        return postedOn;
+    }
+
+    public void setPostedOn(Date postedOn) {
+        this.postedOn = postedOn;
+    }
+
+    public boolean isPublic() {
+        return isPublic;
+    }
+
+    public void setPublic(boolean aPublic) {
+        isPublic = aPublic;
     }
 }

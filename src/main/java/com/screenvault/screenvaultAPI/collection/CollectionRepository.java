@@ -12,4 +12,7 @@ public interface CollectionRepository extends MongoRepository<Collection, UUID> 
     @Nullable
     Page<Collection> findAllByOwnerId(UUID ownerId, Pageable pageable);
 
+    @Nullable
+    Collection findByIsGlobal(boolean isGlobal);
+
 }

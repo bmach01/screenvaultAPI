@@ -10,14 +10,15 @@ import java.util.UUID;
 public class Collection {
     @Id
     private UUID id;
-    private UUID ownerId;
+    private String ownerUsername;
     private String name;
     private boolean isPrivate;
     private List<UUID> posts; // present only in Collection details
+    private boolean isGlobal = false;
 
-    public Collection(UUID id, UUID ownerId, String name, boolean isPrivate, List<UUID> posts) {
+    public Collection(UUID id, String ownerUsername, String name, boolean isPrivate, List<UUID> posts) {
         this.id = id;
-        this.ownerId = ownerId;
+        this.ownerUsername = ownerUsername;
         this.name = name;
         this.isPrivate = isPrivate;
         this.posts = posts;
@@ -31,12 +32,12 @@ public class Collection {
         this.id = id;
     }
 
-    public UUID getOwnerId() {
-        return ownerId;
+    public String getOwnerUsername() {
+        return ownerUsername;
     }
 
-    public void setOwnerId(UUID ownerId) {
-        this.ownerId = ownerId;
+    public void setOwnerUsername(String ownerUsername) {
+        this.ownerUsername = ownerUsername;
     }
 
     public String getName() {
@@ -61,5 +62,13 @@ public class Collection {
 
     public void setPosts(List<UUID> posts) {
         this.posts = posts;
+    }
+
+    public boolean isGlobal() {
+        return isGlobal;
+    }
+
+    public void setGlobal(boolean global) {
+        isGlobal = global;
     }
 }

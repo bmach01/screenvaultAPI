@@ -44,12 +44,14 @@ public class AuthenticationController {
 
         Cookie tokenCookie = new Cookie(JwtType.TOKEN.name(), data.token());
         tokenCookie.setHttpOnly(true);
+        tokenCookie.setPath("/");
 
         Cookie refreshCookie = new Cookie(JwtType.REFRESH_TOKEN.name(), data.refreshToken());
         refreshCookie.setHttpOnly(true);
 
         response.addCookie(tokenCookie);
         response.addCookie(refreshCookie);
+        tokenCookie.setPath("/authentication/");
 
         return ResponseEntity.ok(data.message());
     }

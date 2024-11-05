@@ -34,25 +34,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(
-            @NonNull HttpServletRequest request,
-            @NonNull HttpServletResponse response,
-            @NonNull FilterChain filterChain)
-            throws ServletException, IOException {
+        @NonNull HttpServletRequest request,
+        @NonNull HttpServletResponse response,
+        @NonNull FilterChain filterChain)
+    throws ServletException, IOException {
+
+        if (request.getServletPath().startsWith("/authentication/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         Cookie cookie = WebUtils.getCookie(request, JwtType.TOKEN.name());
-
         if (cookie == null) {
             filterChain.doFilter(request, response);
             return;
-        }
+        };
 
         String token = cookie.getValue();
-
-        if (token == null) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
         String username = jwtService.extractUsername(token);
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {

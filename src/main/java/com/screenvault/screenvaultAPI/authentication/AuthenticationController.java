@@ -67,6 +67,7 @@ public class AuthenticationController {
         if (data.token() == null) return new ResponseEntity<>(data.message() , HttpStatus.UNAUTHORIZED);
 
         Cookie tokenCookie = new Cookie(JwtType.TOKEN.name(), data.token());
+        tokenCookie.setPath("/");
         tokenCookie.setHttpOnly(true);
         response.addCookie(tokenCookie);
 

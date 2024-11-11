@@ -1,31 +1,29 @@
 package com.screenvault.screenvaultAPI.rating;
 
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.UUID;
 
 @Document("rating")
 public class Rating {
-    public enum Score { LIKE, DISLIKE }
     @Id
-    private UUID id;
+    private ObjectId id;
     private String posterUsername;
-    private UUID postId;
+    private ObjectId postId;
     private Score rated;
-
-    public Rating(UUID id, String posterUsername, UUID postId, Score rated) {
+    public Rating(ObjectId id, String posterUsername, ObjectId postId, Score rated) {
         this.id = id;
         this.posterUsername = posterUsername;
         this.postId = postId;
         this.rated = rated;
     }
 
-    public UUID getId() {
+    public ObjectId getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(ObjectId id) {
         this.id = id;
     }
 
@@ -37,11 +35,11 @@ public class Rating {
         this.posterUsername = posterUsername;
     }
 
-    public UUID getPostId() {
+    public ObjectId getPostId() {
         return postId;
     }
 
-    public void setPostId(UUID postId) {
+    public void setPostId(ObjectId postId) {
         this.postId = postId;
     }
 
@@ -52,4 +50,6 @@ public class Rating {
     public void setRated(Score rated) {
         this.rated = rated;
     }
+
+    public enum Score {LIKE, DISLIKE}
 }

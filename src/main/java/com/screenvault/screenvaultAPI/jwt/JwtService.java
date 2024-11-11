@@ -13,10 +13,11 @@ import java.util.Date;
 @Service
 public class JwtService {
 
+    private final String jwtTypeClaim = "TYPE";
+
     private String getSecretKey() {
         return System.getenv("SCREENVAULT_JWT_SECRET_KEY");
     }
-    private final String jwtTypeClaim = "TYPE";
 
     public String generateToken(User user) {
         return Jwts.builder()
@@ -50,7 +51,7 @@ public class JwtService {
 
         return username.equals(user.getUsername()) &&
                 isNotExpired(claims.getExpiration()) &&
-                JwtType.valueOf((String)claims.get(jwtTypeClaim)) == JwtType.TOKEN;
+                JwtType.valueOf((String) claims.get(jwtTypeClaim)) == JwtType.TOKEN;
     }
 
     public boolean isValidRefreshToken(String token, User user) {
@@ -60,7 +61,7 @@ public class JwtService {
 
         return username.equals(user.getUsername()) &&
                 isNotExpired(claims.getExpiration()) &&
-                JwtType.valueOf((String)claims.get(jwtTypeClaim)) == JwtType.REFRESH_TOKEN;
+                JwtType.valueOf((String) claims.get(jwtTypeClaim)) == JwtType.REFRESH_TOKEN;
     }
 
     public String extractUsername(String token) {

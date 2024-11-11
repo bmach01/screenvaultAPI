@@ -1,22 +1,22 @@
 package com.screenvault.screenvaultAPI.collection;
 
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
-import java.util.UUID;
 
 @Document("collection")
 public class Collection {
     @Id
-    private UUID id;
+    private ObjectId id;
     private String ownerUsername;
     private String name;
     private boolean isPrivate;
-    private List<UUID> posts; // present only in Collection details
+    private List<ObjectId> posts; // present only in Collection details
     private boolean isGlobal = false;
 
-    public Collection(UUID id, String ownerUsername, String name, boolean isPrivate, List<UUID> posts) {
+    public Collection(ObjectId id, String ownerUsername, String name, boolean isPrivate, List<ObjectId> posts) {
         this.id = id;
         this.ownerUsername = ownerUsername;
         this.name = name;
@@ -24,11 +24,11 @@ public class Collection {
         this.posts = posts;
     }
 
-    public UUID getId() {
+    public ObjectId getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(ObjectId id) {
         this.id = id;
     }
 
@@ -56,11 +56,11 @@ public class Collection {
         isPrivate = aPrivate;
     }
 
-    public List<UUID> getPosts() {
+    public List<ObjectId> getPosts() {
         return posts;
     }
 
-    public void setPosts(List<UUID> posts) {
+    public void setPosts(List<ObjectId> posts) {
         this.posts = posts;
     }
 

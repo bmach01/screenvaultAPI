@@ -1,17 +1,17 @@
 package com.screenvault.screenvaultAPI.rating;
 
 import com.mongodb.lang.Nullable;
+import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
-import java.util.UUID;
 
-public interface RatingRepository extends MongoRepository<Rating, UUID> {
-
-    @Nullable
-    List<Rating> findByPosterUsernameAndPostIdIn(String posterUsername, List<UUID> postIds);
+public interface RatingRepository extends MongoRepository<Rating, ObjectId> {
 
     @Nullable
-    List<Rating> findByPosterUsernameAndPostId(String posterUsername, UUID postId);
+    List<Rating> findByPosterUsernameAndPostIdIn(String posterUsername, List<ObjectId> postIds);
+
+    @Nullable
+    List<Rating> findByPosterUsernameAndPostId(String posterUsername, ObjectId postId);
 
 }

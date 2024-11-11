@@ -1,9 +1,9 @@
 package com.screenvault.screenvaultAPI.comment;
 
-import java.util.UUID;
+import org.bson.types.ObjectId;
 
 public class GetCommentsRequestBody {
     private int page;
     private int pageSize;
-    private UUID postId;
+    private ObjectId postId;
 }

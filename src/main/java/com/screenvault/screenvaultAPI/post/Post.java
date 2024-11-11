@@ -2,31 +2,31 @@ package com.screenvault.screenvaultAPI.post;
 
 import com.screenvault.screenvaultAPI.comment.Comment;
 import com.screenvault.screenvaultAPI.rating.Rating;
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 @Document("post")
 public class Post {
     @Id
-    private UUID id;
+    private ObjectId id;
     private String title;
     private String imageUrl;
     private String posterUsername;
-    private int score;
-    private int commentCount;
-    private int viewCount;
+    private int score = 0;
+    private int commentCount = 0;
+    private int viewCount = 0;
     private Date postedOn;
     private Set<String> tags;
     private Rating.Score myScore;
     private List<Comment> comments; // present only in Post details
     private boolean isPublic; // for faster search
 
-    public Post(UUID id, String title, String imageUrl, String posterUsername, int score, int commentCount, int viewCount, Date postedOn, Set<String> tags, Rating.Score myScore, List<Comment> comments, boolean isPublic) {
+    public Post(ObjectId id, String title, String imageUrl, String posterUsername, int score, int commentCount, int viewCount, Date postedOn, Set<String> tags, Rating.Score myScore, List<Comment> comments, boolean isPublic) {
         this.id = id;
         this.title = title;
         this.imageUrl = imageUrl;
@@ -41,11 +41,11 @@ public class Post {
         this.isPublic = isPublic;
     }
 
-    public UUID getId() {
+    public ObjectId getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(ObjectId id) {
         this.id = id;
     }
 

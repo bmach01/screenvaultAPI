@@ -1,8 +1,10 @@
 package com.screenvault.screenvaultAPI.collection;
 
-import java.util.UUID;
+import org.bson.types.ObjectId;
 
-public class AddPostToCollectionRequestBody {
-    private UUID postId;
-    private UUID collectionId;
+
+public record AddPostToCollectionRequestBody(
+        ObjectId postId,
+        ObjectId collectionId
+) {
 }

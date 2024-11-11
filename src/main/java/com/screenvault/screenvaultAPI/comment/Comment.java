@@ -1,40 +1,40 @@
 package com.screenvault.screenvaultAPI.comment;
 
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
-import java.util.UUID;
 
 @Document("comment")
 public class Comment {
     @Id
-    private UUID id;
-    private UUID userId;
+    private ObjectId id;
+    private String username;
     private String text;
     private Date postedOn;
 
-    public Comment(UUID id, UUID userId, String text, Date postedOn) {
+    public Comment(ObjectId id, String username, String text, Date postedOn) {
         this.id = id;
-        this.userId = userId;
+        this.username = this.username;
         this.text = text;
         this.postedOn = postedOn;
     }
 
-    public UUID getId() {
+    public ObjectId getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(ObjectId id) {
         this.id = id;
     }
 
-    public UUID getUserId() {
-        return userId;
+    public String getUsername() {
+        return username;
     }
 
-    public void setUserId(UUID userId) {
-        this.userId = userId;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getText() {

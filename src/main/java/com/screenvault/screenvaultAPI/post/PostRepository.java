@@ -1,18 +1,17 @@
 package com.screenvault.screenvaultAPI.post;
 
 import com.mongodb.lang.Nullable;
+import org.bson.types.ObjectId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 import java.util.Date;
 import java.util.Set;
-import java.util.UUID;
 
-public interface PostRepository extends PagingAndSortingRepository<Post, UUID>, MongoRepository<Post, UUID> {
+public interface PostRepository extends PagingAndSortingRepository<Post, ObjectId>, MongoRepository<Post, ObjectId> {
 
     @Nullable
     Page<Post> findByTitleContaining(String title, Pageable pageable);

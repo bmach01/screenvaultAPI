@@ -1,32 +1,37 @@
 package com.screenvault.screenvaultAPI.collection;
 
-import com.mongodb.lang.Nullable;
-import com.screenvault.screenvaultAPI.post.PostService;
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/collection")
 public class CollectionController {
-
-    private final PostService postService;
     private final CollectionService collectionService;
 
-    @GetMapping("/getCollectionsByUserId")
-    public ResponseEntity<Page<Collection>> getCollectionsByUserId(
-            @RequestBody GetCollectionsRequestBody requestBody
-    ) {
-        return null;
+    public CollectionController(CollectionService collectionService) {
+        this.collectionService = collectionService;
     }
 
-    @PutMapping("/addPostToCollection")
-    public ResponseEntity<Object> addPostToCollection(
-            @RequestBody AddPostToCollectionRequestBody requestBody,
-            @Nullable @RequestHeader("Authorization") String requestAuthorizationHeader
+    @GetMapping("/getMyCollections")
+    public ResponseEntity<List<Collection>> getCollectionsByUserId(
+            // JwtType.TOKEN.name()
+            @CookieValue("TOKEN") String token
     ) {
-        if (service.addPostToCollection(requestBody.post())) {
-            return ResponseEntity.ok(responseBody);
+        List<Collection> collections = collectionService.getMyCollections(token);
+        if (collections == null) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(collections);
+
+    }
+
+    @PutMapping("/addPostToMyCollection")
+    public ResponseEntity<String> addPostToMyCollection(
+            @RequestBody AddPostToCollectionRequestBody requestBody,
+            @CookieValue("TOKEN") String token
+    ) {
+        if (collectionService.addPostToMyCollection(token, requestBody.postId(), requestBody.collectionId())) {
+            return ResponseEntity.ok("Successfully added post to the collection.");
         }
         return ResponseEntity.badRequest().build();
     }

@@ -1,16 +1,15 @@
 package com.screenvault.screenvaultAPI.collection;
 
 import com.mongodb.lang.Nullable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-import java.util.UUID;
+import java.util.List;
 
-public interface CollectionRepository extends MongoRepository<Collection, UUID> {
+public interface CollectionRepository extends MongoRepository<Collection, ObjectId> {
 
     @Nullable
-    Page<Collection> findAllByOwnerId(UUID ownerId, Pageable pageable);
+    List<Collection> findAllByOwnerUsername(String ownerUsername);
 
     @Nullable
     Collection findByIsGlobal(boolean isGlobal);

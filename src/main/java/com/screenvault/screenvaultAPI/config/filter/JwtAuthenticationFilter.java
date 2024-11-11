@@ -1,14 +1,14 @@
 package com.screenvault.screenvaultAPI.config.filter;
 
+import com.screenvault.screenvaultAPI.jwt.JwtService;
 import com.screenvault.screenvaultAPI.jwt.JwtType;
+import com.screenvault.screenvaultAPI.user.User;
+import com.screenvault.screenvaultAPI.user.UserDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import com.screenvault.screenvaultAPI.user.User;
-import com.screenvault.screenvaultAPI.jwt.JwtService;
-import com.screenvault.screenvaultAPI.user.UserDetailsServiceImpl;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,9 +23,9 @@ import java.io.IOException;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    private final static String BEARER_PREFIX = "Bearer ";
     private final JwtService jwtService;
     private final UserDetailsServiceImpl userDetailsService;
-    private final static String BEARER_PREFIX = "Bearer ";
 
     public JwtAuthenticationFilter(JwtService jwtService, UserDetailsServiceImpl userDetailsService) {
         this.jwtService = jwtService;
@@ -34,10 +34,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(
-        @NonNull HttpServletRequest request,
-        @NonNull HttpServletResponse response,
-        @NonNull FilterChain filterChain)
-    throws ServletException, IOException {
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain)
+            throws ServletException, IOException {
 
         if (request.getServletPath().startsWith("/authentication/")) {
             filterChain.doFilter(request, response);
@@ -48,7 +48,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (cookie == null) {
             filterChain.doFilter(request, response);
             return;
-        };
+        }
 
         String token = cookie.getValue();
         String username = jwtService.extractUsername(token);

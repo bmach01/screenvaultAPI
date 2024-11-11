@@ -72,7 +72,7 @@ public class PostController {
             // JwtType.TOKEN.name()
             @Nullable @CookieValue("TOKEN") String token
     ) {
-        Post savedPost = postService.savePost(requestBody.post(), requestBody.isPublic())
+        Post savedPost = postService.savePost(requestBody.post(), requestBody.isPublic());
         if (savedPost != null) {
             return ResponseEntity.ok(savedPost);
         }

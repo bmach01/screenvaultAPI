@@ -16,7 +16,7 @@ public class Comment {
 
     public Comment(ObjectId id, String username, String text, Date postedOn) {
         this.id = id;
-        this.username = this.username;
+        this.username = username;
         this.text = text;
         this.postedOn = postedOn;
     }

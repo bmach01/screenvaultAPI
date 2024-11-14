@@ -15,10 +15,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -69,6 +66,7 @@ public class PostService {
 
     public Post savePost(Post post, boolean isPublic) {
         post.setPublic(isPublic);
+        post.setComments(Collections.emptyList());
         Post savedPost = null;
 
         // Check if failed to save

@@ -1,6 +1,5 @@
 package com.screenvault.screenvaultAPI.post;
 
-import com.screenvault.screenvaultAPI.comment.Comment;
 import com.screenvault.screenvaultAPI.rating.Rating;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -23,10 +22,10 @@ public class Post {
     private Date postedOn;
     private Set<String> tags;
     private Rating.Score myScore;
-    private List<Comment> comments; // present only in Post details
+    private List<ObjectId> comments; // present only in Post details
     private boolean isPublic; // for faster search
 
-    public Post(ObjectId id, String title, String imageUrl, String posterUsername, int score, int commentCount, int viewCount, Date postedOn, Set<String> tags, Rating.Score myScore, List<Comment> comments, boolean isPublic) {
+    public Post(ObjectId id, String title, String imageUrl, String posterUsername, int score, int commentCount, int viewCount, Date postedOn, Set<String> tags, Rating.Score myScore, List<ObjectId> comments, boolean isPublic) {
         this.id = id;
         this.title = title;
         this.imageUrl = imageUrl;
@@ -113,11 +112,11 @@ public class Post {
         this.myScore = myScore;
     }
 
-    public List<Comment> getComments() {
+    public List<ObjectId> getComments() {
         return comments;
     }
 
-    public void setComments(List<Comment> comments) {
+    public void setComments(List<ObjectId> comments) {
         this.comments = comments;
     }
 

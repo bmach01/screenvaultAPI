@@ -48,10 +48,10 @@ public class AuthenticationController {
 
         Cookie refreshCookie = new Cookie(JwtType.REFRESH_TOKEN.name(), data.refreshToken());
         refreshCookie.setHttpOnly(true);
+        refreshCookie.setPath("/authentication/refreshToken");
 
         response.addCookie(tokenCookie);
         response.addCookie(refreshCookie);
-        tokenCookie.setPath("/authentication/");
 
         return ResponseEntity.ok(data.message());
     }
@@ -64,13 +64,13 @@ public class AuthenticationController {
     ) {
         TokensResponseDTO data = authenticationService.refreshToken(refreshToken);
 
-        if (data.token() == null) return new ResponseEntity<>(data.message() , HttpStatus.UNAUTHORIZED);
+        if (data.token() == null) return new ResponseEntity<>(data.message(), HttpStatus.UNAUTHORIZED);
 
         Cookie tokenCookie = new Cookie(JwtType.TOKEN.name(), data.token());
         tokenCookie.setPath("/");
         tokenCookie.setHttpOnly(true);
         response.addCookie(tokenCookie);
 
-        return  ResponseEntity.ok(data.message());
+        return ResponseEntity.ok(data.message());
     }
 }

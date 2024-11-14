@@ -15,7 +15,10 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -49,11 +52,12 @@ public class PostService {
     }
 
     public Page<Post> getLandingPagePostsPage(int page, int pageSize) {
-        return postRepository.findByCreatedAtBetweenOrderByPopularityDesc(
-                new Date(System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000),
-                new Date(),
-                PageRequest.of(page, pageSize)
-        );
+//        return postRepository.findByCreatedAtBetweenOrderByPopularityDesc(
+//                new Date(System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000),
+//                new Date(),
+//                PageRequest.of(page, pageSize)
+//        );
+        return postRepository.findAll(PageRequest.of(page, pageSize));
     }
 
     public Page<Post> getPostsByTitle(String title, int page, int pageSize) {
@@ -91,7 +95,7 @@ public class PostService {
     }
 
     public void addUserRatingToPosts(String token, Page<Post> posts) {
-        String username = jwtService.extractUsername(token.substring(BEARER_PREFIX.length()));
+        String username = jwtService.extractUsername(token);
         if (username == null) return;
 
         List<Rating> ratings = ratingRepository.findByPosterUsernameAndPostIdIn(
@@ -103,7 +107,10 @@ public class PostService {
         Map<ObjectId, Rating> ratingsMap = ratings.stream()
                 .collect(Collectors.toMap(Rating::getPostId, rating -> rating));
 
-        posts.getContent().forEach(post -> post.setMyScore(ratingsMap.get(post.getId()).getRated()));
+        posts.getContent().forEach(post -> {
+            Rating rating = ratingsMap.get(post.getId());
+            if (rating != null) post.setMyScore(rating.getRated());
+        });
     }
 
 }

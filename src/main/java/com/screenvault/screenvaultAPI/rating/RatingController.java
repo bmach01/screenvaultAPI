@@ -42,14 +42,14 @@ public class RatingController {
         );
     }
 
-    @DeleteMapping("/deletePost")
+    @DeleteMapping("/deleteRating")
     public ResponseEntity<RatingResponseBody> deleteRating(
             @RequestBody DeleteRatingRequestBody requestBody,
             // JwtType.ACCESS_TOKEN.name()
             @CookieValue("ACCESS_TOKEN") String token
     ) {
         try {
-            ratingService.deleteRating(token, requestBody.ratingId());
+            ratingService.deleteRating(token, requestBody.postId());
         } catch (InternalError e) {
             return ResponseEntity.internalServerError().body(
                     new RatingResponseBody(e.getMessage(), false, null)
@@ -61,7 +61,7 @@ public class RatingController {
         }
 
         return ResponseEntity.ok(new RatingResponseBody(
-                "Successfully posted rating.", true, null)
+                "Successfully deleted rating.", true, null)
         );
     }
 

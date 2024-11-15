@@ -7,9 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface RatingRepository extends MongoRepository<Rating, ObjectId> {
+    List<Rating> findByIdIn(List<RatingKey> ids);
 
-    List<Rating> findByPosterUsernameAndPostIdIn(String posterUsername, List<ObjectId> postIds);
-
-    Optional<Rating> findByPosterUsernameAndPostId(String posterUsername, ObjectId postId);
-
+    Optional<Rating> findById(RatingKey id);
 }

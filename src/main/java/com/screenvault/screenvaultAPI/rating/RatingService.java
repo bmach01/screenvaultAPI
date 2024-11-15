@@ -29,13 +29,12 @@ public class RatingService {
 
     public void addUserRatingToPosts(String token, Page<Post> posts) {
         String username = jwtService.extractUsername(token);
-        List<Rating> ratings = ratingRepository.findByPosterUsernameAndPostIdIn(
-                username,
-                posts.getContent().stream().map(Post::getId).toList()
+        List<Rating> ratings = ratingRepository.findByIdIn(
+                posts.getContent().stream().map(post -> new RatingKey(post.getId(), username)).toList()
         );
 
         Map<ObjectId, Rating> ratingsMap = ratings.stream()
-                .collect(Collectors.toMap(Rating::getPostId, rating -> rating));
+                .collect(Collectors.toMap(rating -> rating.getId().getPostId(), rating -> rating));
 
         posts.getContent().forEach(post -> {
             Rating rating = ratingsMap.get(post.getId());
@@ -46,7 +45,7 @@ public class RatingService {
     public Rating postRating(String token, Rating.Score score, ObjectId postId)
             throws InternalError, IllegalArgumentException, NoSuchElementException {
         String username = jwtService.extractUsername(token);
-        Rating rating = ratingRepository.findByPosterUsernameAndPostId(username, postId).orElse(null);
+        Rating rating = ratingRepository.findById(new RatingKey(postId, username)).orElse(null);
         Post post = postRepository.findById(postId).orElseThrow();
 
         // update existing rating
@@ -56,7 +55,8 @@ public class RatingService {
         }
         // create new rating
         else {
-            rating = new Rating(null, username, postId, score);
+            rating = new Rating(null, score);
+            rating.setId(new RatingKey(postId, username));
             post.setScore(post.getScore() + score.value);
         }
 
@@ -70,17 +70,19 @@ public class RatingService {
         return rating;
     }
 
-    public void deleteRating(String token, ObjectId ratingId)
+    public void deleteRating(String token, ObjectId postId)
             throws PermissionDeniedDataAccessException, InternalError, IllegalArgumentException, NoSuchElementException {
-        Rating rating = ratingRepository.findById(ratingId).orElseThrow();
-        Post post = postRepository.findById(rating.getPostId()).orElseThrow();
+        String username = jwtService.extractUsername(token);
+        Rating rating = ratingRepository.findById(new RatingKey(postId, username)).orElseThrow();
+        Post post = postRepository.findById(rating.getId().getPostId()).orElseThrow();
 
-        if (!rating.getPosterUsername().equals(jwtService.extractUsername(token)))
+        if (!rating.getId().getUsername().equals(username))
             throw new PermissionDeniedDataAccessException("Rating is not principal's.", null);
+
+        post.setScore(post.getScore() - rating.getRated().value);
 
         try {
             ratingRepository.delete(rating);
-            post.getComments().remove(ratingId);
             postRepository.save(post);
         } catch (OptimisticLockingFailureException e) {
             throw new InternalError("Failed to delete the rating. Try again later.");

@@ -6,6 +6,7 @@ import com.screenvault.screenvaultAPI.user.User;
 import com.screenvault.screenvaultAPI.user.UserRepository;
 import com.screenvault.screenvaultAPI.user.UserRole;
 import com.screenvault.screenvaultAPI.user.UserStatus;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -30,28 +31,36 @@ public class AuthenticationService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public RegisterResponseBody register(User request) {
+    private boolean isBlankOrNull(String str) {
+        return str == null || str.isBlank();
+    }
+
+    public User register(User request) throws IllegalArgumentException {
+        if (isBlankOrNull(request.getLogin()) ||
+                isBlankOrNull(request.getUsername()) ||
+                isBlankOrNull(request.getPassword())
+        ) throw new IllegalArgumentException("Credentials and username may not be blank or null.");
 
         User user = new User(
-            request.getUsername(),
-            request.getLogin(),
-            passwordEncoder.encode(request.getPassword()),
-            UserRole.USER,
-            UserStatus.ACTIVE
+                request.getUsername(),
+                request.getLogin(),
+                passwordEncoder.encode(request.getPassword()),
+                UserRole.USER,
+                UserStatus.ACTIVE
         );
 
-        if (userRepository.findByUsername(request.getUsername()) != null)
-            return new RegisterResponseBody("Username taken.", null);
+        if (userRepository.findByUsername(request.getUsername()).isPresent())
+            throw new IllegalArgumentException("Username taken.");
 
-        if (userRepository.findByLogin(request.getLogin()) != null)
-            return new RegisterResponseBody("This email has an account bound to it.", null);
+        if (userRepository.findByUsername(request.getUsername()).isPresent())
+            throw new IllegalArgumentException("Email has been used already.");
 
         userRepository.save(user);
 
-        return new RegisterResponseBody("Account created successfully.", user);
+        return user;
     }
 
-    public TokensResponseDTO login(String basicAuthorizationHeader) {
+    public TokensDTO login(String basicAuthorizationHeader) throws BadCredentialsException, IllegalArgumentException {
         if (!basicAuthorizationHeader.startsWith(BASIC_PREFIX))
             throw new IllegalArgumentException("Invalid Authorization header format.");
 
@@ -61,26 +70,22 @@ public class AuthenticationService {
         if (split.length != 2)
             throw new IllegalArgumentException("Invalid Authorization header format, credentials should be split by ':'.");
 
-        User user = userRepository.findByLogin(split[0]);
-        // Invalid credentials
-        if (user == null)
-            return new TokensResponseDTO("Invalid credentials.", null, null);
+        User user = userRepository.findByLogin(split[0]).orElseThrow(() -> new BadCredentialsException("Invalid credentials."));
+        if (!passwordEncoder.matches(split[1], user.getPassword())) throw new BadCredentialsException("Invalid credentials.");
 
         String token = jwtService.generateToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
 
-        return new TokensResponseDTO("Successfully authenticated.", token, refreshToken);
+        return new TokensDTO(token, refreshToken);
     }
 
-    public TokensResponseDTO refreshToken(String refreshToken) {
-        User user = userRepository.findByUsername(jwtService.extractUsername(refreshToken));
+    public String refreshToken(String refreshToken) throws BadCredentialsException {
+        User user = userRepository.findByUsername(jwtService.extractUsername(refreshToken))
+                .orElseThrow(() -> new BadCredentialsException("Invalid refresh token."));
 
-        if (user == null)
-            return new TokensResponseDTO("Invalid refresh token.", null, null);
+        if (!jwtService.isValidRefreshToken(refreshToken, user))
+            throw new BadCredentialsException("Refresh token may have expired.");
 
-        if (jwtService.isValidRefreshToken(refreshToken, user))
-            return new TokensResponseDTO("Successfully refreshed token.", jwtService.generateToken(user), null);
-
-        return new TokensResponseDTO("Refresh token may have expired.", null, null);
+        return jwtService.generateToken(user);
     }
 }

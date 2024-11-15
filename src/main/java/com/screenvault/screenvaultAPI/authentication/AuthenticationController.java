@@ -4,8 +4,8 @@ import com.screenvault.screenvaultAPI.jwt.JwtType;
 import com.screenvault.screenvaultAPI.user.User;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,30 +19,35 @@ public class AuthenticationController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<RegisterResponseBody> register(
+    public ResponseEntity<LoginResponseBody> register(
             @RequestBody User request
     ) {
-        RegisterResponseBody responseBody = authenticationService.register(request);
-
-        // Username taken, email already used
-        if (responseBody.user() == null) return ResponseEntity.badRequest().body(responseBody);
-        // Account created
-        return ResponseEntity.ok(responseBody);
+        User user = null;
+        try {
+            user = authenticationService.register(request);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(new LoginResponseBody(e.getMessage(), false));
+        }
+        return ResponseEntity.ok(new LoginResponseBody("Account successfully registered.", true));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(
+    public ResponseEntity<LoginResponseBody> login(
             @RequestHeader("Authorization") String basicAuthorizationHeader,
             HttpServletResponse response
     ) {
-        TokensResponseDTO data = authenticationService.login(basicAuthorizationHeader);
-
-        // Invalid credentials
-        if (data.token() == null || data.refreshToken() == null) {
-            return new ResponseEntity<>(data.message(), HttpStatus.UNAUTHORIZED);
+        TokensDTO data = null;
+        try {
+            data = authenticationService.login(basicAuthorizationHeader);
+        } catch (BadCredentialsException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(
+                    new LoginResponseBody(e.getMessage(), false)
+            );
         }
 
-        Cookie tokenCookie = new Cookie(JwtType.TOKEN.name(), data.token());
+        Cookie tokenCookie = new Cookie(JwtType.ACCESS_TOKEN.name(), data.token());
         tokenCookie.setHttpOnly(true);
         tokenCookie.setPath("/");
 
@@ -53,24 +58,27 @@ public class AuthenticationController {
         response.addCookie(tokenCookie);
         response.addCookie(refreshCookie);
 
-        return ResponseEntity.ok(data.message());
+        return ResponseEntity.ok(new LoginResponseBody("Successfully authenticated.", true));
     }
 
     @GetMapping("/refreshToken")
-    public ResponseEntity<String> refreshToken(
+    public ResponseEntity<LoginResponseBody> refreshToken(
             // JwtType.REFRESH_TOKEN.name() <-- annotation can't use variable value
             @CookieValue("REFRESH_TOKEN") String refreshToken,
             HttpServletResponse response
     ) {
-        TokensResponseDTO data = authenticationService.refreshToken(refreshToken);
+        String newToken = null;
+        try {
+            newToken = authenticationService.refreshToken(refreshToken);
+        } catch (BadCredentialsException e) {
+            return ResponseEntity.notFound().build();
+        }
 
-        if (data.token() == null) return new ResponseEntity<>(data.message(), HttpStatus.UNAUTHORIZED);
-
-        Cookie tokenCookie = new Cookie(JwtType.TOKEN.name(), data.token());
+        Cookie tokenCookie = new Cookie(JwtType.ACCESS_TOKEN.name(), newToken);
         tokenCookie.setPath("/");
         tokenCookie.setHttpOnly(true);
         response.addCookie(tokenCookie);
 
-        return ResponseEntity.ok(data.message());
+        return ResponseEntity.ok(new LoginResponseBody("Successfully refreshed token.", true));
     }
 }

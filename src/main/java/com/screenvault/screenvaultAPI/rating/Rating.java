@@ -13,6 +13,9 @@ public class Rating {
     private ObjectId postId;
     private Score rated;
 
+    public Rating() {
+    }
+
     public Rating(ObjectId id, String posterUsername, ObjectId postId, Score rated) {
         this.id = id;
         this.posterUsername = posterUsername;

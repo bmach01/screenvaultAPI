@@ -14,6 +14,9 @@ public class Comment {
     private String text;
     private Date postedOn;
 
+    public Comment() {
+    }
+
     public Comment(ObjectId id, String username, String text, Date postedOn) {
         this.id = id;
         this.username = username;

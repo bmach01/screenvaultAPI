@@ -25,6 +25,9 @@ public class Post {
     private List<ObjectId> comments; // present only in Post details
     private boolean isPublic; // for faster search
 
+    public Post() {
+    }
+
     public Post(ObjectId id, String title, String imageUrl, String posterUsername, int score, int commentCount, int viewCount, Date postedOn, Set<String> tags, Rating.Score myScore, List<ObjectId> comments, boolean isPublic) {
         this.id = id;
         this.title = title;

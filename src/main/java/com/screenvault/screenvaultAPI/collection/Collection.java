@@ -16,7 +16,8 @@ public class Collection {
     private List<ObjectId> posts; // present only in Collection details
     private boolean isGlobal = false;
 
-    public Collection() {}
+    public Collection() {
+    }
 
     public Collection(ObjectId id, String ownerUsername, String name, boolean isPrivate, List<ObjectId> posts) {
         this.id = id;

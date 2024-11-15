@@ -12,6 +12,7 @@ public class Rating {
     private String posterUsername;
     private ObjectId postId;
     private Score rated;
+
     public Rating(ObjectId id, String posterUsername, ObjectId postId, Score rated) {
         this.id = id;
         this.posterUsername = posterUsername;
@@ -51,5 +52,13 @@ public class Rating {
         this.rated = rated;
     }
 
-    public enum Score {LIKE, DISLIKE}
+    public enum Score {
+        LIKE(1), DISLIKE(-1);
+
+        public final int value;
+
+        Score(int value) {
+            this.value = value;
+        }
+    }
 }

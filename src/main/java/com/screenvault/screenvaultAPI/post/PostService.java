@@ -94,23 +94,6 @@ public class PostService {
         return mongoTemplate.updateFirst(query, update, Collection.class).getModifiedCount() != 0;
     }
 
-    public void addUserRatingToPosts(String token, Page<Post> posts) {
-        String username = jwtService.extractUsername(token);
-        if (username == null) return;
 
-        List<Rating> ratings = ratingRepository.findByPosterUsernameAndPostIdIn(
-                username,
-                posts.getContent().stream().map(Post::getId).toList()
-        );
-        if (ratings == null) return;
-
-        Map<ObjectId, Rating> ratingsMap = ratings.stream()
-                .collect(Collectors.toMap(Rating::getPostId, rating -> rating));
-
-        posts.getContent().forEach(post -> {
-            Rating rating = ratingsMap.get(post.getId());
-            if (rating != null) post.setMyScore(rating.getRated());
-        });
-    }
 
 }

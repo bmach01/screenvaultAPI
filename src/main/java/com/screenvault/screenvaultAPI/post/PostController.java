@@ -1,6 +1,7 @@
 package com.screenvault.screenvaultAPI.post;
 
 import com.mongodb.lang.Nullable;
+import com.screenvault.screenvaultAPI.rating.RatingService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,9 +11,11 @@ import org.springframework.web.bind.annotation.*;
 public class PostController {
 
     private final PostService postService;
+    private final RatingService ratingService;
 
-    public PostController(PostService postService) {
+    public PostController(PostService postService, RatingService ratingService) {
         this.postService = postService;
+        this.ratingService = ratingService;
     }
 
     @GetMapping("/getLandingPagePosts")
@@ -26,7 +29,7 @@ public class PostController {
         if (posts == null || posts.isEmpty()) return ResponseEntity.notFound().build();
 
         if (token != null) {
-            postService.addUserRatingToPosts(token, posts);
+            ratingService.addUserRatingToPosts(token, posts);
         }
 
         return ResponseEntity.ok(posts);
@@ -43,7 +46,7 @@ public class PostController {
         if (posts == null || posts.isEmpty()) return ResponseEntity.notFound().build();
 
         if (token != null) {
-            postService.addUserRatingToPosts(token, posts);
+            ratingService.addUserRatingToPosts(token, posts);
         }
 
         return ResponseEntity.ok(posts);
@@ -60,7 +63,7 @@ public class PostController {
         if (posts == null || posts.isEmpty()) return ResponseEntity.notFound().build();
 
         if (token != null) {
-            postService.addUserRatingToPosts(token, posts);
+            ratingService.addUserRatingToPosts(token, posts);
         }
 
         return ResponseEntity.ok(posts);

@@ -1,6 +1,6 @@
 package com.screenvault.screenvaultAPI.authentication;
 
-public record LoginResponseBody(
+public record AuthenticationResponseBody(
         String message,
         boolean success
 ) {

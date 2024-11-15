@@ -19,20 +19,20 @@ public class AuthenticationController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<LoginResponseBody> register(
+    public ResponseEntity<AuthenticationResponseBody> register(
             @RequestBody User request
     ) {
         User user = null;
         try {
             user = authenticationService.register(request);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(new LoginResponseBody(e.getMessage(), false));
+            return ResponseEntity.badRequest().body(new AuthenticationResponseBody(e.getMessage(), false));
         }
-        return ResponseEntity.ok(new LoginResponseBody("Account successfully registered.", true));
+        return ResponseEntity.ok(new AuthenticationResponseBody("Account successfully registered.", true));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseBody> login(
+    public ResponseEntity<AuthenticationResponseBody> login(
             @RequestHeader("Authorization") String basicAuthorizationHeader,
             HttpServletResponse response
     ) {
@@ -43,7 +43,7 @@ public class AuthenticationController {
             return ResponseEntity.notFound().build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(
-                    new LoginResponseBody(e.getMessage(), false)
+                    new AuthenticationResponseBody(e.getMessage(), false)
             );
         }
 
@@ -58,11 +58,11 @@ public class AuthenticationController {
         response.addCookie(tokenCookie);
         response.addCookie(refreshCookie);
 
-        return ResponseEntity.ok(new LoginResponseBody("Successfully authenticated.", true));
+        return ResponseEntity.ok(new AuthenticationResponseBody("Successfully authenticated.", true));
     }
 
     @GetMapping("/refreshToken")
-    public ResponseEntity<LoginResponseBody> refreshToken(
+    public ResponseEntity<AuthenticationResponseBody> refreshToken(
             // JwtType.REFRESH_TOKEN.name() <-- annotation can't use variable value
             @CookieValue("REFRESH_TOKEN") String refreshToken,
             HttpServletResponse response
@@ -79,6 +79,6 @@ public class AuthenticationController {
         tokenCookie.setHttpOnly(true);
         response.addCookie(tokenCookie);
 
-        return ResponseEntity.ok(new LoginResponseBody("Successfully refreshed token.", true));
+        return ResponseEntity.ok(new AuthenticationResponseBody("Successfully refreshed token.", true));
     }
 }

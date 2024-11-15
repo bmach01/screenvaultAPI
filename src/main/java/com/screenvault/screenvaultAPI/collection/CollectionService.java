@@ -2,7 +2,10 @@ package com.screenvault.screenvaultAPI.collection;
 
 import com.screenvault.screenvaultAPI.jwt.JwtService;
 import com.screenvault.screenvaultAPI.post.PostService;
+import org.apache.coyote.BadRequestException;
 import org.bson.types.ObjectId;
+import org.springframework.dao.PermissionDeniedDataAccessException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,18 +25,23 @@ public class CollectionService {
 
     public List<Collection> getMyCollections(String token) {
         String username = jwtService.extractUsername(token);
-        return collectionRepository.findAllByOwnerUsername(username);
+        return collectionRepository.findAllByOwnerUsername(username).orElse(null);
     }
 
-    public boolean addPostToMyCollection(String token, ObjectId postId, ObjectId collectionId) {
+    public Collection addPostToMyCollection(String token, ObjectId postId, ObjectId collectionId)
+            throws BadRequestException, PermissionDeniedDataAccessException, InternalError
+    {
         String username = jwtService.extractUsername(token);
-        Collection collection = collectionRepository.findById(collectionId).orElse(null); // Can't make it nullable(?)
+        Collection collection = collectionRepository.findById(collectionId)
+                .orElseThrow(() -> new BadRequestException("Collection not found."));
 
-        if (collection == null) return false;
-        if (!collection.getOwnerUsername().equals(username)) return false;
+        if (!collection.getOwnerUsername().equals(username))
+            throw new PermissionDeniedDataAccessException("Collection is not principal's.", null);
 
-        postService.addPostToCollection(postId, collectionId);
-        return true;
+        if (!postService.addPostToCollection(postId, collectionId))
+            throw new InternalError("Failed to update the collection.");
+
+        return collection;
     }
 
 

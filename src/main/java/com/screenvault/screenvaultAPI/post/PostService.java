@@ -4,9 +4,9 @@ import com.screenvault.screenvaultAPI.collection.Collection;
 import com.screenvault.screenvaultAPI.collection.CollectionRepository;
 import com.screenvault.screenvaultAPI.comment.CommentRepository;
 import com.screenvault.screenvaultAPI.jwt.JwtService;
-import com.screenvault.screenvaultAPI.rating.Rating;
 import com.screenvault.screenvaultAPI.rating.RatingRepository;
 import org.bson.types.ObjectId;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -16,10 +16,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class PostService {
@@ -52,39 +49,36 @@ public class PostService {
     }
 
     public Page<Post> getLandingPagePostsPage(int page, int pageSize) {
-//        return postRepository.findByCreatedAtBetweenOrderByPopularityDesc(
-//                new Date(System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000),
-//                new Date(),
-//                PageRequest.of(page, pageSize)
-//        );
         return postRepository.findAll(PageRequest.of(page, pageSize));
     }
 
     public Page<Post> getPostsByTitle(String title, int page, int pageSize) {
-        return postRepository.findByTitleContaining(title, PageRequest.of(page, pageSize));
+        return postRepository.findByTitleContaining(title, PageRequest.of(page, pageSize)).orElse(Page.empty());
     }
 
     public Page<Post> getPostsByTags(Set<String> tags, int page, int pageSize) {
-        return postRepository.findByTagsIn(tags, PageRequest.of(page, pageSize));
+        return postRepository.findByTagsIn(tags, PageRequest.of(page, pageSize)).orElse(Page.empty());
     }
 
-    public Post savePost(Post post, boolean isPublic) {
+    public Post uploadPost(Post post, boolean isPublic) throws InternalError, IllegalArgumentException {
         post.setPublic(isPublic);
         post.setComments(Collections.emptyList());
         Post savedPost = null;
 
-        // Check if failed to save
         try {
             savedPost = postRepository.save(post);
-        } catch (Exception e) {
-            return null;
+        } catch (OptimisticLockingFailureException e) {
+            throw new InternalError("Internal error. Try again later.");
         }
 
         if (isPublic) {
-            Collection globalCollection = collectionRepository.findByIsGlobal(true);
-            assert globalCollection != null;
-            if (!addPostToCollection(savedPost.getId(), globalCollection.getId())) return null;
+            Collection globalCollection = collectionRepository.findByIsGlobal(true)
+                    .orElseThrow(() -> new InternalError("Internal error. Try again later."));
+
+            if (!addPostToCollection(savedPost.getId(), globalCollection.getId()))
+                throw new InternalError("Failed to make post public.");
         }
+
         return savedPost;
     }
 
@@ -93,7 +87,4 @@ public class PostService {
         Update update = new Update().addToSet("posts", postId);
         return mongoTemplate.updateFirst(query, update, Collection.class).getModifiedCount() != 0;
     }
-
-
-
 }

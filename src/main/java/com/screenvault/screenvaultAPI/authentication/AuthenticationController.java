@@ -28,7 +28,9 @@ public class AuthenticationController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new AuthenticationResponseBody(e.getMessage(), false));
         }
-        return ResponseEntity.ok(new AuthenticationResponseBody("Account successfully registered.", true));
+        return ResponseEntity.ok(
+                new AuthenticationResponseBody("Successfully registered an account.", true)
+        );
     }
 
     @PostMapping("/login")
@@ -42,9 +44,7 @@ public class AuthenticationController {
         } catch (BadCredentialsException e) {
             return ResponseEntity.notFound().build();
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(
-                    new AuthenticationResponseBody(e.getMessage(), false)
-            );
+            return ResponseEntity.badRequest().body(new AuthenticationResponseBody(e.getMessage(), false));
         }
 
         Cookie tokenCookie = new Cookie(JwtType.ACCESS_TOKEN.name(), data.token());
@@ -79,6 +79,8 @@ public class AuthenticationController {
         tokenCookie.setHttpOnly(true);
         response.addCookie(tokenCookie);
 
-        return ResponseEntity.ok(new AuthenticationResponseBody("Successfully refreshed token.", true));
+        return ResponseEntity.ok(
+                new AuthenticationResponseBody("Successfully refreshed the token.", true)
+        );
     }
 }

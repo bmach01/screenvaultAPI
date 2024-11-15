@@ -26,8 +26,6 @@ public class PostController {
     ) {
         Page<Post> posts = postService.getLandingPagePostsPage(requestBody.page(), requestBody.pageSize());
 
-        if (posts == null || posts.isEmpty()) return ResponseEntity.notFound().build();
-
         if (token != null) {
             ratingService.addUserRatingToPosts(token, posts);
         }
@@ -42,8 +40,6 @@ public class PostController {
             @Nullable @CookieValue("TOKEN") String token
     ) {
         Page<Post> posts = postService.getPostsByTitle(requestBody.title(), requestBody.page(), requestBody.pageSize());
-
-        if (posts == null || posts.isEmpty()) return ResponseEntity.notFound().build();
 
         if (token != null) {
             ratingService.addUserRatingToPosts(token, posts);
@@ -60,8 +56,6 @@ public class PostController {
     ) {
         Page<Post> posts = postService.getPostsByTags(requestBody.tags(), requestBody.page(), requestBody.pageSize());
 
-        if (posts == null || posts.isEmpty()) return ResponseEntity.notFound().build();
-
         if (token != null) {
             ratingService.addUserRatingToPosts(token, posts);
         }
@@ -70,16 +64,25 @@ public class PostController {
     }
 
     @PostMapping("/uploadPost")
-    public ResponseEntity<Post> uploadPost(
+    public ResponseEntity<UploadPostResponseBody> uploadPost(
             @RequestBody PostPostRequestBody requestBody,
             // JwtType.TOKEN.name()
             @Nullable @CookieValue("TOKEN") String token
     ) {
-        Post savedPost = postService.savePost(requestBody.post(), requestBody.isPublic());
-        if (savedPost != null) {
-            return ResponseEntity.ok(savedPost);
+        Post savedPost = null;
+        try {
+            savedPost = postService.uploadPost(requestBody.post(), requestBody.isPublic());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(new UploadPostResponseBody(e.getMessage(), false, null));
+        } catch (InternalError e) {
+            return ResponseEntity.internalServerError()
+                    .body(new UploadPostResponseBody(e.getMessage(), false, null));
         }
-        return ResponseEntity.badRequest().build();
+
+        return ResponseEntity.ok(
+                new UploadPostResponseBody("Successfully uploaded new post", true, savedPost)
+        );
     }
 
 }

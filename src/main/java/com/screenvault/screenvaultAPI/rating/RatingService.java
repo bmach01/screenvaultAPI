@@ -26,13 +26,10 @@ public class RatingService {
 
     public void addUserRatingToPosts(String token, Page<Post> posts) {
         String username = jwtService.extractUsername(token);
-        if (username == null) return;
-
         List<Rating> ratings = ratingRepository.findByPosterUsernameAndPostIdIn(
                 username,
                 posts.getContent().stream().map(Post::getId).toList()
         );
-        if (ratings == null) return;
 
         Map<ObjectId, Rating> ratingsMap = ratings.stream()
                 .collect(Collectors.toMap(Rating::getPostId, rating -> rating));

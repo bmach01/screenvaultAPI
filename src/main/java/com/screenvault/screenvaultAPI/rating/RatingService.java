@@ -4,11 +4,14 @@ import com.screenvault.screenvaultAPI.jwt.JwtService;
 import com.screenvault.screenvaultAPI.post.Post;
 import com.screenvault.screenvaultAPI.post.PostRepository;
 import org.bson.types.ObjectId;
+import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.dao.PermissionDeniedDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,10 +43,11 @@ public class RatingService {
         });
     }
 
-    public Rating postRating(String token, Rating.Score score, ObjectId postId) throws Exception, InternalError {
+    public Rating postRating(String token, Rating.Score score, ObjectId postId)
+            throws InternalError, IllegalArgumentException, NoSuchElementException {
         String username = jwtService.extractUsername(token);
         Rating rating = ratingRepository.findByPosterUsernameAndPostId(username, postId).orElse(null);
-        Post post = postRepository.findById(postId).orElseThrow(() -> new Exception("Post does not exist."));
+        Post post = postRepository.findById(postId).orElseThrow();
 
         // update existing rating
         if (rating != null) {
@@ -59,23 +63,26 @@ public class RatingService {
         try {
             postRepository.save(post);
             ratingRepository.save(rating);
-        } catch (Exception e) {
+        } catch (OptimisticLockingFailureException e) {
             throw new InternalError("Failed to save new rating. Try again later.");
         }
 
         return rating;
     }
 
-    public void deleteRating(String token, ObjectId ratingId) throws Exception, InternalError {
-        Rating rating = ratingRepository.findById(ratingId).orElseThrow(() -> new Exception("Rating does not exist."));
-        Post post = postRepository.findById(rating.getPostId()).orElseThrow(() -> new Exception("Post does not exist."));
-        String username = jwtService.extractUsername(token);
+    public void deleteRating(String token, ObjectId ratingId)
+            throws PermissionDeniedDataAccessException, InternalError, IllegalArgumentException, NoSuchElementException {
+        Rating rating = ratingRepository.findById(ratingId).orElseThrow();
+        Post post = postRepository.findById(rating.getPostId()).orElseThrow();
 
-        if (!rating.getPosterUsername().equals(username)) throw new Exception("Rating is not principal's.");
+        if (!rating.getPosterUsername().equals(jwtService.extractUsername(token)))
+            throw new PermissionDeniedDataAccessException("Rating is not principal's.", null);
 
         try {
             ratingRepository.delete(rating);
-        } catch (Exception e) {
+            post.getComments().remove(ratingId);
+            postRepository.save(post);
+        } catch (OptimisticLockingFailureException e) {
             throw new InternalError("Failed to delete the rating. Try again later.");
         }
     }

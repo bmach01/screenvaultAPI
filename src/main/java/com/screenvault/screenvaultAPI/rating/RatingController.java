@@ -1,8 +1,10 @@
 package com.screenvault.screenvaultAPI.rating;
 
-import com.mongodb.lang.Nullable;
+import org.springframework.dao.PermissionDeniedDataAccessException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.NoSuchElementException;
 
 
 @RestController
@@ -18,11 +20,12 @@ public class RatingController {
     @PostMapping("/postRating")
     public ResponseEntity<RatingResponseBody> postRating(
             @RequestBody PostNewRatingRequestBody requestBody,
-            // JwtType.TOKEN.name()
-            @Nullable @CookieValue("TOKEN") String token
+            // JwtType.ACCESS_TOKEN.name()
+            @CookieValue("ACCESS_TOKEN") String token
 
     ) {
         Rating rating = null;
+
         try {
             rating = ratingService.postRating(token, requestBody.score(), requestBody.postId());
         } catch (InternalError e) {
@@ -42,8 +45,8 @@ public class RatingController {
     @DeleteMapping("/deletePost")
     public ResponseEntity<RatingResponseBody> deleteRating(
             @RequestBody DeleteRatingRequestBody requestBody,
-            // JwtType.TOKEN.name()
-            @Nullable @CookieValue("TOKEN") String token
+            // JwtType.ACCESS_TOKEN.name()
+            @CookieValue("ACCESS_TOKEN") String token
     ) {
         try {
             ratingService.deleteRating(token, requestBody.ratingId());
@@ -51,11 +54,12 @@ public class RatingController {
             return ResponseEntity.internalServerError().body(
                     new RatingResponseBody(e.getMessage(), false, null)
             );
-        } catch (Exception e) {
+        } catch (IllegalArgumentException | PermissionDeniedDataAccessException | NoSuchElementException e) {
             return ResponseEntity.badRequest().body(
                     new RatingResponseBody(e.getMessage(), false, null)
             );
         }
+
         return ResponseEntity.ok(new RatingResponseBody(
                 "Successfully posted rating.", true, null)
         );

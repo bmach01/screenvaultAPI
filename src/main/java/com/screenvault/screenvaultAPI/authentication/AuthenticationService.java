@@ -70,8 +70,11 @@ public class AuthenticationService {
         if (split.length != 2)
             throw new IllegalArgumentException("Invalid Authorization header format, credentials should be split by ':'.");
 
-        User user = userRepository.findByLogin(split[0]).orElseThrow(() -> new BadCredentialsException("Invalid credentials."));
-        if (!passwordEncoder.matches(split[1], user.getPassword())) throw new BadCredentialsException("Invalid credentials.");
+        User user = userRepository.findByLogin(split[0])
+                .orElseThrow(() -> new BadCredentialsException("Invalid credentials or account does not exist."));
+
+        if (!passwordEncoder.matches(split[1], user.getPassword()))
+            throw new BadCredentialsException("Invalid credentials or account does not exist.");
 
         String token = jwtService.generateToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);

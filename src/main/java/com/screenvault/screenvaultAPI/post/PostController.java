@@ -1,6 +1,5 @@
 package com.screenvault.screenvaultAPI.post;
 
-import com.mongodb.lang.Nullable;
 import com.screenvault.screenvaultAPI.rating.RatingService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -21,8 +20,8 @@ public class PostController {
     @GetMapping("/getLandingPagePosts")
     public ResponseEntity<Page<Post>> getLandingPagePosts(
             @RequestBody GetPostsRequestBody requestBody,
-            // JwtType.TOKEN.name()
-            @Nullable @CookieValue("TOKEN") String token
+            // JwtType.ACCESS_TOKEN.name()
+            @CookieValue("ACCESS_TOKEN") String token
     ) {
         Page<Post> posts = postService.getLandingPagePostsPage(requestBody.page(), requestBody.pageSize());
 
@@ -36,8 +35,8 @@ public class PostController {
     @GetMapping("/getPostsByTitles")
     public ResponseEntity<Page<Post>> getPostsByTitles(
             @RequestBody GetPostsRequestBody requestBody,
-            // JwtType.TOKEN.name()
-            @Nullable @CookieValue("TOKEN") String token
+            // JwtType.ACCESS_TOKEN.name()
+            @CookieValue("ACCESS_TOKEN") String token
     ) {
         Page<Post> posts = postService.getPostsByTitle(requestBody.title(), requestBody.page(), requestBody.pageSize());
 
@@ -51,8 +50,8 @@ public class PostController {
     @GetMapping("/getPostsByTags")
     public ResponseEntity<Page<Post>> getPostsByTags(
             @RequestBody GetPostsRequestBody requestBody,
-            // JwtType.TOKEN.name()
-            @Nullable @CookieValue("TOKEN") String token
+            // JwtType.ACCESS_TOKEN.name()
+            @CookieValue("ACCESS_TOKEN") String token
     ) {
         Page<Post> posts = postService.getPostsByTags(requestBody.tags(), requestBody.page(), requestBody.pageSize());
 
@@ -66,8 +65,8 @@ public class PostController {
     @PostMapping("/uploadPost")
     public ResponseEntity<UploadPostResponseBody> uploadPost(
             @RequestBody PostPostRequestBody requestBody,
-            // JwtType.TOKEN.name()
-            @Nullable @CookieValue("TOKEN") String token
+            // JwtType.ACCESS_TOKEN.name()
+            @CookieValue("ACCESS_TOKEN") String token
     ) {
         Post savedPost = null;
         try {

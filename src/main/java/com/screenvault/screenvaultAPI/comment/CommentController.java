@@ -1,8 +1,11 @@
 package com.screenvault.screenvaultAPI.comment;
 
+import org.springframework.dao.PermissionDeniedDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/comment")
@@ -23,30 +26,48 @@ public class CommentController {
                 requestBody.page(),
                 requestBody.pageSize()
         );
-        return comments == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(comments);
+        return ResponseEntity.ok(comments);
     }
 
     @PostMapping("/postComment")
-    public ResponseEntity<Comment> postCommentUnderPost(
+    public ResponseEntity<CommentResponseBody> postCommentUnderPost(
             @RequestBody PostCommentRequestBody requestBody,
-            // JwtType.TOKEN.name()
-            @CookieValue("TOKEN") String token
+            // JwtType.ACCESS_TOKEN.name()
+            @CookieValue("ACCESS_TOKEN") String token
     ) {
-        Comment savedComment = commentService.saveComment(token, requestBody.postId(), requestBody.comment());
-        if (savedComment != null) {
-            return ResponseEntity.ok(savedComment);
+        Comment savedComment = null;
+
+        try {
+            savedComment = commentService.uploadComment(token, requestBody.postId(), requestBody.comment());
+        } catch (IllegalArgumentException | NoSuchElementException e) {
+            return ResponseEntity.badRequest()
+                    .body(new CommentResponseBody(e.getMessage(), false, null));
         }
-        return ResponseEntity.badRequest().build();
+
+        return ResponseEntity.ok(
+                new CommentResponseBody("Successfully uploaded comment", true, savedComment)
+        );
     }
 
     @DeleteMapping("/deleteComment")
-    public ResponseEntity<Void> deleteComment(
+    public ResponseEntity<CommentResponseBody> deleteComment(
             @RequestBody DeleteCommentRequestBody requestBody,
-            // JwtType.TOKEN.name()
-            @CookieValue("TOKEN") String token
+            // JwtType.ACCESS_TOKEN.name()
+            @CookieValue("ACCESS_TOKEN") String token
     ) {
-        return commentService.deleteComment(token, requestBody.postId(), requestBody.commentId()) ?
-                ResponseEntity.noContent().build() : ResponseEntity.badRequest().build();
+        try {
+            commentService.deleteComment(token, requestBody.postId(), requestBody.commentId());
+        } catch (IllegalArgumentException | PermissionDeniedDataAccessException e) {
+            return ResponseEntity.badRequest()
+                    .body(new CommentResponseBody(e.getMessage(), false, null));
+        } catch (InternalError e) {
+            return ResponseEntity.internalServerError()
+                    .body(new CommentResponseBody(e.getMessage(), false, null));
+        }
+
+        return ResponseEntity.ok(
+                new CommentResponseBody("Successfully deleted the comment", true, null)
+        );
     }
 
 }

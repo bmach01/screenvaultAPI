@@ -1,11 +1,11 @@
 package com.screenvault.screenvaultAPI.collection;
 
-import org.apache.coyote.BadRequestException;
 import org.springframework.dao.PermissionDeniedDataAccessException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/collection")
@@ -30,17 +30,13 @@ public class CollectionController {
             @CookieValue("TOKEN") String token
     ) {
         Collection collection = null;
+
         try {
             collection = collectionService.addPostToMyCollection(token, requestBody.postId(), requestBody.collectionId());
-        }
-        catch (PermissionDeniedDataAccessException e) {
-            return ResponseEntity.notFound().build();
-        }
-        catch (BadRequestException e) {
+        } catch (IllegalArgumentException | PermissionDeniedDataAccessException | NoSuchElementException e) {
             return ResponseEntity.badRequest()
                     .body(new CollectionResponseBody(e.getMessage(), false, null));
-        }
-        catch (InternalError e) {
+        } catch (InternalError e) {
             return ResponseEntity.internalServerError()
                     .body(new CollectionResponseBody(e.getMessage(), false, null));
         }

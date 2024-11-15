@@ -25,7 +25,7 @@ public class JwtService {
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + 5 * 60 * 1000))
                 .signWith(getSigningKey())
-                .claim(jwtTypeClaim, JwtType.TOKEN)
+                .claim(jwtTypeClaim, JwtType.ACCESS_TOKEN)
                 .compact();
     }
 
@@ -51,7 +51,7 @@ public class JwtService {
 
         return username.equals(user.getUsername()) &&
                 isNotExpired(claims.getExpiration()) &&
-                JwtType.valueOf((String) claims.get(jwtTypeClaim)) == JwtType.TOKEN;
+                JwtType.valueOf((String) claims.get(jwtTypeClaim)) == JwtType.ACCESS_TOKEN;
     }
 
     public boolean isValidRefreshToken(String token, User user) {

@@ -19,6 +19,9 @@ public class User implements UserDetails {
     private UserRole role;
     private UserStatus status;
 
+    public User() {
+    }
+
     public User(String username, String login, String password, UserRole role, UserStatus status) {
         this.username = username;
         this.login = login;

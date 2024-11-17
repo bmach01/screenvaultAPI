@@ -62,7 +62,7 @@ public class AuthenticationService {
 
     public TokensDTO login(String basicAuthorizationHeader) throws BadCredentialsException, IllegalArgumentException {
         if (!basicAuthorizationHeader.startsWith(BASIC_PREFIX))
-            throw new IllegalArgumentException("Invalid Authorization header format.");
+            throw new IllegalArgumentException("Invalid Authorization header format. Basic auth starts with 'Basic '.");
 
         String credentials = basicAuthorizationHeader.substring(BASIC_PREFIX.length());
         String[] split = new String(Base64.getDecoder().decode(credentials)).split(":");

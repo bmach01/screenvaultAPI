@@ -1,9 +1,10 @@
 package com.screenvault.screenvaultAPI.comment;
 
-import org.bson.types.ObjectId;
+
+import java.util.UUID;
 
 public record DeleteCommentRequestBody(
-        ObjectId postId,
-        ObjectId commentId
+        UUID postId,
+        UUID commentId
 ) {
 }

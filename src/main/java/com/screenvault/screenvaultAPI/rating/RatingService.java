@@ -3,7 +3,6 @@ package com.screenvault.screenvaultAPI.rating;
 import com.screenvault.screenvaultAPI.jwt.JwtService;
 import com.screenvault.screenvaultAPI.post.Post;
 import com.screenvault.screenvaultAPI.post.PostRepository;
-import org.bson.types.ObjectId;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.dao.PermissionDeniedDataAccessException;
 import org.springframework.data.domain.Page;
@@ -12,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,7 +33,7 @@ public class RatingService {
                 posts.getContent().stream().map(post -> new RatingKey(post.getId(), username)).toList()
         );
 
-        Map<ObjectId, Rating> ratingsMap = ratings.stream()
+        Map<UUID, Rating> ratingsMap = ratings.stream()
                 .collect(Collectors.toMap(rating -> rating.getId().getPostId(), rating -> rating));
 
         posts.getContent().forEach(post -> {
@@ -42,7 +42,7 @@ public class RatingService {
         });
     }
 
-    public Rating postRating(String token, Rating.Score score, ObjectId postId)
+    public Rating postRating(String token, Rating.Score score, UUID postId)
             throws InternalError, IllegalArgumentException, NoSuchElementException {
         String username = jwtService.extractUsername(token);
         Rating rating = ratingRepository.findById(new RatingKey(postId, username)).orElse(null);
@@ -70,7 +70,7 @@ public class RatingService {
         return rating;
     }
 
-    public void deleteRating(String token, ObjectId postId)
+    public void deleteRating(String token, UUID postId)
             throws PermissionDeniedDataAccessException, InternalError, IllegalArgumentException, NoSuchElementException {
         String username = jwtService.extractUsername(token);
         Rating rating = ratingRepository.findById(new RatingKey(postId, username)).orElseThrow();

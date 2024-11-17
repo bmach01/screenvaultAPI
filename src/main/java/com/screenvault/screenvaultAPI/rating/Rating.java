@@ -11,6 +11,7 @@ public class Rating {
     @Id
     private RatingKey id;
     private Score rated;
+
     public Rating() {
     }
 

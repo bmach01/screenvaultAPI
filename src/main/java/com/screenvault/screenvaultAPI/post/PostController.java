@@ -70,7 +70,7 @@ public class PostController {
     ) {
         Post savedPost = null;
         try {
-            savedPost = postService.uploadPost(requestBody.post(), requestBody.isPublic());
+            savedPost = postService.uploadPost(token, requestBody.post(), requestBody.isPublic());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
                     .body(new UploadPostResponseBody(e.getMessage(), false, null));

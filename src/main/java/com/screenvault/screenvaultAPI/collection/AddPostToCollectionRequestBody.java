@@ -1,10 +1,10 @@
 package com.screenvault.screenvaultAPI.collection;
 
-import org.bson.types.ObjectId;
 
+import java.util.UUID;
 
 public record AddPostToCollectionRequestBody(
-        ObjectId postId,
-        ObjectId collectionId
+        UUID postId,
+        UUID collectionId
 ) {
 }

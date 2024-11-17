@@ -1,24 +1,24 @@
 package com.screenvault.screenvaultAPI.rating;
 
-import org.bson.types.ObjectId;
+import java.util.UUID;
 
 public class RatingKey {
-    private ObjectId postId;
+    private UUID postId;
     private String username;
 
     public RatingKey() {
     }
 
-    public RatingKey(ObjectId postId, String username) {
+    public RatingKey(UUID postId, String username) {
         this.postId = postId;
         this.username = username;
     }
 
-    public ObjectId getPostId() {
+    public UUID getPostId() {
         return postId;
     }
 
-    public void setPostId(ObjectId postId) {
+    public void setPostId(UUID postId) {
         this.postId = postId;
     }
 

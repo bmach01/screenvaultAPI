@@ -1,9 +1,9 @@
 package com.screenvault.screenvaultAPI.rating;
 
-import org.bson.types.ObjectId;
+import java.util.UUID;
 
 public record PostNewRatingRequestBody(
-        ObjectId postId,
+        UUID postId,
         Rating.Score score
 ) {
 }

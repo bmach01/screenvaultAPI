@@ -4,22 +4,24 @@ import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 @Document("collection")
 public class Collection {
     @Id
-    private ObjectId id;
+    private UUID id = UUID.randomUUID();
     private String ownerUsername;
     private String name;
     private boolean isPrivate;
-    private List<ObjectId> posts; // present only in Collection details
+    private List<ObjectId> posts = Collections.emptyList(); // present only in Collection details
     private boolean isGlobal = false;
 
     public Collection() {
     }
 
-    public Collection(ObjectId id, String ownerUsername, String name, boolean isPrivate, List<ObjectId> posts) {
+    public Collection(UUID id, String ownerUsername, String name, boolean isPrivate, List<ObjectId> posts) {
         this.id = id;
         this.ownerUsername = ownerUsername;
         this.name = name;
@@ -27,11 +29,11 @@ public class Collection {
         this.posts = posts;
     }
 
-    public ObjectId getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(ObjectId id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

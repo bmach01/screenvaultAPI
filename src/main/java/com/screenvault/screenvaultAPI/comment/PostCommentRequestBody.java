@@ -1,9 +1,9 @@
 package com.screenvault.screenvaultAPI.comment;
 
-import org.bson.types.ObjectId;
+import java.util.UUID;
 
 public record PostCommentRequestBody(
         Comment comment,
-        ObjectId postId
+        UUID postId
 ) {
 }

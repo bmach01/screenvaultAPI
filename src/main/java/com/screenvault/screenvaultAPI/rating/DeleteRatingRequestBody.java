@@ -1,8 +1,8 @@
 package com.screenvault.screenvaultAPI.rating;
 
-import org.bson.types.ObjectId;
+import java.util.UUID;
 
 public record DeleteRatingRequestBody(
-        ObjectId postId
+        UUID postId
 ) {
 }

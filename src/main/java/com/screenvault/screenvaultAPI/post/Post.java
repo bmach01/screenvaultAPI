@@ -1,18 +1,15 @@
 package com.screenvault.screenvaultAPI.post;
 
 import com.screenvault.screenvaultAPI.rating.Rating;
-import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Document("post")
 public class Post {
     @Id
-    private ObjectId id;
+    private UUID id = UUID.randomUUID();
     private String title;
     private String imageUrl;
     private String posterUsername;
@@ -20,15 +17,15 @@ public class Post {
     private int commentCount = 0;
     private int viewCount = 0;
     private Date postedOn;
-    private Set<String> tags;
+    private Set<String> tags = Collections.emptySet();
     private Rating.Score myScore;
-    private List<ObjectId> comments; // present only in Post details
+    private List<UUID> comments = Collections.emptyList(); // present only in Post details
     private boolean isPublic; // for faster search
 
     public Post() {
     }
 
-    public Post(ObjectId id, String title, String imageUrl, String posterUsername, int score, int commentCount, int viewCount, Date postedOn, Set<String> tags, Rating.Score myScore, List<ObjectId> comments, boolean isPublic) {
+    public Post(UUID id, String title, String imageUrl, String posterUsername, int score, int commentCount, int viewCount, Date postedOn, Set<String> tags, Rating.Score myScore, List<UUID> comments, boolean isPublic) {
         this.id = id;
         this.title = title;
         this.imageUrl = imageUrl;
@@ -43,11 +40,11 @@ public class Post {
         this.isPublic = isPublic;
     }
 
-    public ObjectId getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(ObjectId id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
@@ -115,11 +112,11 @@ public class Post {
         this.myScore = myScore;
     }
 
-    public List<ObjectId> getComments() {
+    public List<UUID> getComments() {
         return comments;
     }
 
-    public void setComments(List<ObjectId> comments) {
+    public void setComments(List<UUID> comments) {
         this.comments = comments;
     }
 

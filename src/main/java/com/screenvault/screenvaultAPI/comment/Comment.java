@@ -1,15 +1,15 @@
 package com.screenvault.screenvaultAPI.comment;
 
-import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
+import java.util.UUID;
 
 @Document("comment")
 public class Comment {
     @Id
-    private ObjectId id;
+    private UUID id = UUID.randomUUID();
     private String username;
     private String text;
     private Date postedOn;
@@ -17,18 +17,18 @@ public class Comment {
     public Comment() {
     }
 
-    public Comment(ObjectId id, String username, String text, Date postedOn) {
+    public Comment(UUID id, String username, String text, Date postedOn) {
         this.id = id;
         this.username = username;
         this.text = text;
         this.postedOn = postedOn;
     }
 
-    public ObjectId getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(ObjectId id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

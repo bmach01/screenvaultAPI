@@ -18,8 +18,8 @@ public class CollectionController {
 
     @GetMapping("/getMyCollections")
     public ResponseEntity<List<Collection>> getCollectionsByUserId(
-            // JwtType.TOKEN.name()
-            @CookieValue("TOKEN") String token
+            // JwtType.ACCESS_TOKEN.name()
+            @CookieValue("ACCESS_TOKEN") String token
     ) {
         return ResponseEntity.ok(collectionService.getMyCollections(token));
     }
@@ -27,7 +27,8 @@ public class CollectionController {
     @PutMapping("/addPostToMyCollection")
     public ResponseEntity<CollectionResponseBody> addPostToMyCollection(
             @RequestBody AddPostToCollectionRequestBody requestBody,
-            @CookieValue("TOKEN") String token
+            // JwtType.ACCESS_TOKEN.name()
+            @CookieValue("ACCESS_TOKEN") String token
     ) {
         Collection collection = null;
 
@@ -46,6 +47,26 @@ public class CollectionController {
                 true,
                 collection
         ));
+    }
+
+    @PostMapping("/postCollection")
+    public ResponseEntity<CollectionResponseBody> createNewCollection(
+            @RequestBody PostCollectionRequestBody requestBody,
+            // JwtType.ACCESS_TOKEN.name()
+            @CookieValue("ACCESS_TOKEN") String token
+    ) {
+        Collection savedCollection = null;
+
+        try {
+            savedCollection = collectionService.uploadCollection(token, requestBody.collection());
+        } catch (IllegalArgumentException | NoSuchElementException e) {
+            return ResponseEntity.badRequest()
+                    .body(new CollectionResponseBody(e.getMessage(), false, null));
+        }
+
+        return ResponseEntity.ok(
+                new CollectionResponseBody("Successfully uploaded comment", true, savedCollection)
+        );
     }
 
 }

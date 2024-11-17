@@ -3,7 +3,6 @@ package com.screenvault.screenvaultAPI.comment;
 import com.screenvault.screenvaultAPI.jwt.JwtService;
 import com.screenvault.screenvaultAPI.post.Post;
 import com.screenvault.screenvaultAPI.post.PostRepository;
-import org.bson.types.ObjectId;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.dao.PermissionDeniedDataAccessException;
 import org.springframework.data.domain.Page;
@@ -12,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.NoSuchElementException;
+import java.util.UUID;
 
 
 @Service
@@ -27,7 +27,7 @@ public class CommentService {
         this.jwtService = jwtService;
     }
 
-    public Page<Comment> getCommentsByPostId(ObjectId postId, int page, int pageSize)
+    public Page<Comment> getCommentsByPostId(UUID postId, int page, int pageSize)
             throws IllegalArgumentException, NoSuchElementException {
         // TODO: get comments ONLY under post by post id
         Post post = postRepository.findById(postId).orElseThrow();
@@ -36,7 +36,7 @@ public class CommentService {
     }
 
 
-    public Comment uploadComment(String token, ObjectId postId, Comment comment)
+    public Comment uploadComment(String token, UUID postId, Comment comment)
             throws IllegalArgumentException, NoSuchElementException, InternalError {
         Comment savedComment = null;
         comment.setPostedOn(new Date());
@@ -59,7 +59,7 @@ public class CommentService {
         return savedComment;
     }
 
-    public boolean deleteComment(String token, ObjectId postId, ObjectId commentId)
+    public boolean deleteComment(String token, UUID postId, UUID commentId)
             throws IllegalArgumentException, PermissionDeniedDataAccessException, InternalError {
         Comment comment = null;
         Post post = null;

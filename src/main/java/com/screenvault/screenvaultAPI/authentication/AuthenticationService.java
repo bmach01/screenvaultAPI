@@ -41,6 +41,12 @@ public class AuthenticationService {
                 isBlankOrNull(request.getPassword())
         ) throw new IllegalArgumentException("Credentials and username may not be blank or null.");
 
+        if (userRepository.findByUsername(request.getUsername()).isPresent())
+            throw new IllegalArgumentException("Username taken.");
+
+        if (userRepository.findByLogin(request.getLogin()).isPresent())
+            throw new IllegalArgumentException("Email has been used already.");
+
         User user = new User(
                 request.getUsername(),
                 request.getLogin(),
@@ -48,12 +54,6 @@ public class AuthenticationService {
                 UserRole.USER,
                 UserStatus.ACTIVE
         );
-
-        if (userRepository.findByUsername(request.getUsername()).isPresent())
-            throw new IllegalArgumentException("Username taken.");
-
-        if (userRepository.findByUsername(request.getUsername()).isPresent())
-            throw new IllegalArgumentException("Email has been used already.");
 
         userRepository.save(user);
 

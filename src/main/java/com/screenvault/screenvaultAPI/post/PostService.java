@@ -12,16 +12,16 @@ import java.util.Set;
 public class PostService {
 
     private final PostRepository postRepository;
-    //    private final PostImageRepository postImageRepository;
+        private final ImageRepository imageRepository;
     private final JwtService jwtService;
 
     public PostService(
             PostRepository postRepository,
-//            PostImageRepository postImageRepository,
+            ImageRepository imageRepository,
             JwtService jwtService
     ) {
         this.postRepository = postRepository;
-//        this.postImageRepository = postImageRepository;
+        this.imageRepository = imageRepository;
         this.jwtService = jwtService;
     }
 

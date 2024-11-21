@@ -14,13 +14,12 @@ public class ImageRepository {
     private static final String ACCESS_KEY = System.getenv("SCREENVAULT_MINIO_ACCESS_KEY");
     private static final String SECRET_KEY = System.getenv("SCREENVAULT_MINIO_SECRET_KEY");
 
-    private final MinioClient minioClient;
+    private final MinioClient minioClient = MinioClient.builder()
+            .endpoint(SERVER_URL)
+            .credentials(ACCESS_KEY, SECRET_KEY)
+            .build();
 
     public ImageRepository() {
-        this.minioClient = MinioClient.builder()
-                .endpoint(SERVER_URL)
-                .credentials(ACCESS_KEY, SECRET_KEY)
-                .build();
     }
 
     public String uploadPrivateImage(MultipartFile image, String name) throws InternalError {

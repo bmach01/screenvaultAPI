@@ -2,6 +2,7 @@ package com.screenvault.screenvaultAPI.post;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.screenvault.screenvaultAPI.rating.RatingService;
+import org.springframework.dao.PermissionDeniedDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -68,6 +69,7 @@ public class PostController {
     public ResponseEntity<UploadPostResponseBody> uploadPost(
             @RequestParam String postRequest,
             @RequestParam MultipartFile image,
+            // JwtType.ACCESS_TOKEN.name()
             @CookieValue("ACCESS_TOKEN") String token
     ) {
         UploadPostRequestParam postRequestDTO = null;
@@ -94,4 +96,24 @@ public class PostController {
         );
     }
 
+    @DeleteMapping("/deletePost")
+    public ResponseEntity<DeletePostResponseBody> deletePost(
+            @RequestBody DeletePostRequestBody requestBody,
+            // JwtType.ACCESS_TOKEN.name()
+            @CookieValue("ACCESS_TOKEN") String token
+    ) {
+        try {
+            postService.deletePost(token, requestBody.postId());
+        } catch (IllegalArgumentException | PermissionDeniedDataAccessException e) {
+            return ResponseEntity.badRequest()
+                    .body(new DeletePostResponseBody(e.getMessage(), false));
+        } catch (InternalError e) {
+            return ResponseEntity.internalServerError()
+                    .body(new DeletePostResponseBody(e.getMessage(), false));
+        }
+
+        return ResponseEntity.ok(
+                new DeletePostResponseBody("Successfully deleted the comment", true)
+        );
+    }
 }

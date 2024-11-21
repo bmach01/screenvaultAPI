@@ -2,6 +2,7 @@ package com.screenvault.screenvaultAPI.post;
 
 import com.screenvault.screenvaultAPI.jwt.JwtService;
 import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.dao.PermissionDeniedDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -9,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 public class PostService {
@@ -71,5 +73,23 @@ public class PostService {
         }
 
         return savedPost;
+    }
+
+    public void deletePost(String token, UUID postId)
+            throws IllegalArgumentException, PermissionDeniedDataAccessException, InternalError {
+        String username = jwtService.extractUsername(token);
+
+        try {
+            Post post = postRepository.findById(postId).orElseThrow();
+            if (!post.getPosterUsername().equals(username))
+                throw new PermissionDeniedDataAccessException("Collection is not principal's.", null);
+
+            postRepository.deleteById(postId);
+        } catch (NullPointerException ignored) {
+        } // TODO: reconsider this
+        catch (OptimisticLockingFailureException e) {
+            throw new InternalError("Internal error. Try again later.");
+        }
+
     }
 }

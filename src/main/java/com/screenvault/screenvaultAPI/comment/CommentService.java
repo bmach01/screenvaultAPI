@@ -59,7 +59,7 @@ public class CommentService {
         return savedComment;
     }
 
-    public boolean deleteComment(String token, UUID postId, UUID commentId)
+    public void deleteComment(String token, UUID postId, UUID commentId)
             throws IllegalArgumentException, PermissionDeniedDataAccessException, InternalError {
         Comment comment = null;
         Post post = null;
@@ -74,10 +74,9 @@ public class CommentService {
             post.getComments().remove(commentId);
             postRepository.save(post);
         } catch (NullPointerException ignored) {
-        } catch (OptimisticLockingFailureException e) {
+        } // TODO: reconsider this
+        catch (OptimisticLockingFailureException e) {
             throw new InternalError("Internal error. Try again later.");
         }
-
-        return true;
     }
 }

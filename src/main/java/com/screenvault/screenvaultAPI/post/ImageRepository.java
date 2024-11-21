@@ -1,54 +1,134 @@
 package com.screenvault.screenvaultAPI.post;
 
-import io.minio.MinioClient;
-import io.minio.PutObjectArgs;
-import io.minio.RemoveObjectArgs;
+import io.minio.*;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.security.InvalidKeyException;
+
 @Repository
 public class ImageRepository {
-    private static final String BUCKET_NAME = "images";
+    private static final String PUBLIC_BUCKET = "public";
+    private static final String PRIVATE_BUCKET = "private";
     private static final String SERVER_URL = System.getenv("SCREENVAULT_MINIO_URL");
     private static final String ACCESS_KEY = System.getenv("SCREENVAULT_MINIO_ACCESS_KEY");
     private static final String SECRET_KEY = System.getenv("SCREENVAULT_MINIO_SECRET_KEY");
 
     private final MinioClient minioClient;
 
-    public ImageRepository(MinioClient minioClient) {
+    public ImageRepository() {
         this.minioClient = MinioClient.builder()
                 .endpoint(SERVER_URL)
                 .credentials(ACCESS_KEY, SECRET_KEY)
                 .build();
     }
 
-    public void uploadImage(MultipartFile image, String name)
-        throws InternalError
-    {
+    public String uploadPrivateImage(MultipartFile image, String name) throws InternalError {
         try {
             minioClient.putObject(
                     PutObjectArgs.builder()
-                            .bucket("images")
+                            .bucket(PRIVATE_BUCKET)
                             .object(name)
                             .contentType(image.getContentType())
                             .stream(image.getInputStream(), image.getSize(), -1)
                             .build());
-        }
-        catch (Exception e) {
+
+            return minioClient.getPresignedObjectUrl(
+                    GetPresignedObjectUrlArgs.builder()
+                            .bucket(PRIVATE_BUCKET)
+                            .object(name)
+                            .build()
+            );
+        } catch (InvalidKeyException e) {
+            throw new InternalError(e.getMessage());
+        } catch (Exception e) {
             throw new InternalError("Internal error. Try again later.");
         }
     }
 
-    public void deleteImage(String name) {
+    public void uploadPublicImage(MultipartFile image, String name) throws InternalError {
+        try {
+            minioClient.putObject(
+                    PutObjectArgs.builder()
+                            .bucket(PUBLIC_BUCKET)
+                            .object(name)
+                            .contentType(image.getContentType())
+                            .stream(image.getInputStream(), image.getSize(), -1)
+                            .build());
+        } catch (InvalidKeyException e) {
+            throw new InternalError(e.getMessage());
+        } catch (Exception e) {
+            throw new InternalError("Internal error. Try again later.");
+        }
+    }
+
+    public void deleteImage(String name, boolean isPrivate) throws InternalError {
+        if (isPrivate) deleteImageFromBucket(PRIVATE_BUCKET, name);
+        else deleteImageFromBucket(PUBLIC_BUCKET, name);
+    }
+
+    private void deleteImageFromBucket(String bucket, String name) throws InternalError {
         try {
             minioClient.removeObject(
                     RemoveObjectArgs.builder()
-                            .bucket("images")
+                            .bucket(bucket)
                             .object(name)
                             .build()
             );
+        } catch (InvalidKeyException e) {
+            throw new InternalError(e.getMessage());
+        } catch (Exception e) {
+            throw new InternalError("Internal error. Try again later.");
         }
-        catch (Exception e) {
+    }
+
+    public String makeImagePrivate(String name) {
+        try {
+            minioClient.copyObject(
+                    CopyObjectArgs.builder()
+                            .bucket(PRIVATE_BUCKET)
+                            .object(name)
+                            .source(
+                                    CopySource.builder()
+                                            .bucket(PUBLIC_BUCKET)
+                                            .object(name)
+                                            .build()
+                            )
+                            .build()
+            );
+            deleteImageFromBucket(PUBLIC_BUCKET, name);
+
+            return minioClient.getPresignedObjectUrl(
+                    GetPresignedObjectUrlArgs.builder()
+                            .bucket(PRIVATE_BUCKET)
+                            .object(name)
+                            .build()
+            );
+        } catch (InvalidKeyException e) {
+            throw new InternalError(e.getMessage());
+        } catch (Exception e) {
+            throw new InternalError("Internal error. Try again later.");
+        }
+    }
+
+    public void makeImagePublic(String name) {
+        try {
+            minioClient.copyObject(
+                    CopyObjectArgs.builder()
+                            .bucket(PUBLIC_BUCKET)
+                            .object(name)
+                            .source(
+                                    CopySource.builder()
+                                            .bucket(PRIVATE_BUCKET)
+                                            .object(name)
+                                            .build()
+                            )
+                            .build()
+            );
+            deleteImageFromBucket(PRIVATE_BUCKET, name);
+        } catch (InvalidKeyException e) {
+            throw new InternalError(e.getMessage());
+        } catch (Exception e) {
             throw new InternalError("Internal error. Try again later.");
         }
     }

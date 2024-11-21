@@ -1,9 +1,11 @@
 package com.screenvault.screenvaultAPI.post;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.screenvault.screenvaultAPI.rating.RatingService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/post")
@@ -64,13 +66,21 @@ public class PostController {
 
     @PostMapping("/uploadPost")
     public ResponseEntity<UploadPostResponseBody> uploadPost(
-            @RequestBody PostPostRequestBody requestBody,
-            // JwtType.ACCESS_TOKEN.name()
+            @RequestParam String postRequest,
+            @RequestParam MultipartFile image,
             @CookieValue("ACCESS_TOKEN") String token
     ) {
+        UploadPostRequestParam postRequestDTO = null;
+        try {
+            postRequestDTO = new ObjectMapper().readValue(postRequest, UploadPostRequestParam.class);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(new UploadPostResponseBody("Failed to deserialize the request.", false, null));
+        }
+
         Post savedPost = null;
         try {
-            savedPost = postService.uploadPost(token, requestBody.post(), requestBody.isPublic());
+            savedPost = postService.uploadPost(token, postRequestDTO.post(), postRequestDTO.isPublic(), image);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
                     .body(new UploadPostResponseBody(e.getMessage(), false, null));

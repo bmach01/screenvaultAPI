@@ -55,7 +55,8 @@ public class CollectionService {
         try {
             savedCollection = collectionRepository.save(collection);
 
-        } catch (OptimisticLockingFailureException e) {
+        }
+        catch (OptimisticLockingFailureException e) {
             throw new InternalError("Internal error. Try again later.");
         }
 

@@ -1,6 +1,7 @@
 package com.screenvault.screenvaultAPI.rating;
 
 import org.springframework.dao.PermissionDeniedDataAccessException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,11 +29,13 @@ public class RatingController {
 
         try {
             rating = ratingService.postRating(token, requestBody.score(), requestBody.postId());
-        } catch (InternalError e) {
+        }
+        catch (InternalError e) {
             return ResponseEntity.internalServerError().body(
                     new RatingResponseBody(e.getMessage(), false, null)
             );
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return ResponseEntity.badRequest().body(
                     new RatingResponseBody(e.getMessage(), false, null)
             );
@@ -50,12 +53,19 @@ public class RatingController {
     ) {
         try {
             ratingService.deleteRating(token, requestBody.postId());
-        } catch (InternalError e) {
+        }
+        catch (InternalError e) {
             return ResponseEntity.internalServerError().body(
                     new RatingResponseBody(e.getMessage(), false, null)
             );
-        } catch (IllegalArgumentException | PermissionDeniedDataAccessException | NoSuchElementException e) {
+        }
+        catch (IllegalArgumentException | NoSuchElementException e) {
             return ResponseEntity.badRequest().body(
+                    new RatingResponseBody(e.getMessage(), false, null)
+            );
+        }
+        catch (PermissionDeniedDataAccessException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
                     new RatingResponseBody(e.getMessage(), false, null)
             );
         }

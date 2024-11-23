@@ -63,7 +63,8 @@ public class RatingService {
         try {
             postRepository.save(post);
             ratingRepository.save(rating);
-        } catch (OptimisticLockingFailureException e) {
+        }
+        catch (OptimisticLockingFailureException e) {
             throw new InternalError("Failed to save new rating. Try again later.");
         }
 
@@ -84,7 +85,8 @@ public class RatingService {
         try {
             ratingRepository.delete(rating);
             postRepository.save(post);
-        } catch (OptimisticLockingFailureException e) {
+        }
+        catch (OptimisticLockingFailureException e) {
             throw new InternalError("Failed to delete the rating. Try again later.");
         }
     }

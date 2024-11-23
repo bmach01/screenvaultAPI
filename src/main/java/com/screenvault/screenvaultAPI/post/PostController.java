@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.screenvault.screenvaultAPI.rating.RatingService;
 import org.springframework.dao.PermissionDeniedDataAccessException;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -66,7 +67,7 @@ public class PostController {
     }
 
     @PostMapping("/uploadPost")
-    public ResponseEntity<UploadPostResponseBody> uploadPost(
+    public ResponseEntity<PostResponseBody> uploadPost(
             @RequestParam String postRequest,
             @RequestParam MultipartFile image,
             // JwtType.ACCESS_TOKEN.name()
@@ -75,45 +76,89 @@ public class PostController {
         UploadPostRequestParam postRequestDTO = null;
         try {
             postRequestDTO = new ObjectMapper().readValue(postRequest, UploadPostRequestParam.class);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return ResponseEntity.badRequest()
-                    .body(new UploadPostResponseBody("Failed to deserialize the request.", false, null));
+                    .body(new PostResponseBody("Failed to deserialize the request.", false, null));
         }
 
         Post savedPost = null;
         try {
             savedPost = postService.uploadPost(token, postRequestDTO.post(), postRequestDTO.isPublic(), image);
-        } catch (IllegalArgumentException e) {
+        }
+        catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                    .body(new UploadPostResponseBody(e.getMessage(), false, null));
-        } catch (InternalError e) {
+                    .body(new PostResponseBody(e.getMessage(), false, null));
+        }
+        catch (InternalError e) {
             return ResponseEntity.internalServerError()
-                    .body(new UploadPostResponseBody(e.getMessage(), false, null));
+                    .body(new PostResponseBody(e.getMessage(), false, null));
         }
 
         return ResponseEntity.ok(
-                new UploadPostResponseBody("Successfully uploaded new post", true, savedPost)
+                new PostResponseBody("Successfully uploaded new post", true, savedPost)
         );
     }
 
     @DeleteMapping("/deletePost")
-    public ResponseEntity<DeletePostResponseBody> deletePost(
+    public ResponseEntity<PostResponseBody> deletePost(
             @RequestBody DeletePostRequestBody requestBody,
             // JwtType.ACCESS_TOKEN.name()
             @CookieValue("ACCESS_TOKEN") String token
     ) {
         try {
             postService.deletePost(token, requestBody.postId());
-        } catch (IllegalArgumentException | PermissionDeniedDataAccessException e) {
-            return ResponseEntity.badRequest()
-                    .body(new DeletePostResponseBody(e.getMessage(), false));
-        } catch (InternalError e) {
-            return ResponseEntity.internalServerError()
-                    .body(new DeletePostResponseBody(e.getMessage(), false));
+        }
+        catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(
+                    new PostResponseBody(e.getMessage(), false, null)
+            );
+        }
+        catch (PermissionDeniedDataAccessException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    new PostResponseBody(e.getMessage(), false, null)
+            );
+        }
+        catch (InternalError e) {
+            return ResponseEntity.internalServerError().body(
+                    new PostResponseBody(e.getMessage(), false, null)
+            );
         }
 
         return ResponseEntity.ok(
-                new DeletePostResponseBody("Successfully deleted the comment", true)
+                new PostResponseBody("Successfully deleted the comment", true, null)
+        );
+    }
+
+    @PutMapping("/updatePostVisibility")
+    public ResponseEntity<PostResponseBody> changePostVisibility(
+            @RequestBody UpdatePostVisibilityRequestBody requestBody,
+            // JwtType.ACCESS_TOKEN.name()
+            @CookieValue("ACCESS_TOKEN") String token
+    ) {
+        Post updatedPost = null;
+        try {
+            updatedPost = postService.changePostVisiblity(token, requestBody.postId(), requestBody.toPublic());
+
+        }
+        catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(
+                    new PostResponseBody(e.getMessage(), false, null)
+            );
+        }
+        catch (PermissionDeniedDataAccessException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    new PostResponseBody(e.getMessage(), false, null)
+            );
+        }
+        catch (InternalError e) {
+            return ResponseEntity.internalServerError().body(
+                    new PostResponseBody(e.getMessage(), false, null)
+            );
+        }
+
+        return ResponseEntity.ok(
+                new PostResponseBody("Successfully updated post visibility.", true, updatedPost)
         );
     }
 }

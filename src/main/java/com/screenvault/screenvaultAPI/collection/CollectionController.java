@@ -1,6 +1,7 @@
 package com.screenvault.screenvaultAPI.collection;
 
 import org.springframework.dao.PermissionDeniedDataAccessException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,12 +35,21 @@ public class CollectionController {
 
         try {
             collection = collectionService.addPostToMyCollection(token, requestBody.postId(), requestBody.collectionId());
-        } catch (IllegalArgumentException | PermissionDeniedDataAccessException | NoSuchElementException e) {
-            return ResponseEntity.badRequest()
-                    .body(new CollectionResponseBody(e.getMessage(), false, null));
-        } catch (InternalError e) {
-            return ResponseEntity.internalServerError()
-                    .body(new CollectionResponseBody(e.getMessage(), false, null));
+        }
+        catch (IllegalArgumentException | NoSuchElementException e) {
+            return ResponseEntity.badRequest().body(
+                    new CollectionResponseBody(e.getMessage(), false, null)
+            );
+        }
+        catch (PermissionDeniedDataAccessException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    new CollectionResponseBody(e.getMessage(), false, null)
+            );
+        }
+        catch (InternalError e) {
+            return ResponseEntity.internalServerError().body(
+                    new CollectionResponseBody(e.getMessage(), false, null)
+            );
         }
 
         return ResponseEntity.ok(new CollectionResponseBody(
@@ -59,9 +69,11 @@ public class CollectionController {
 
         try {
             savedCollection = collectionService.uploadCollection(token, requestBody.collection());
-        } catch (IllegalArgumentException | NoSuchElementException e) {
-            return ResponseEntity.badRequest()
-                    .body(new CollectionResponseBody(e.getMessage(), false, null));
+        }
+        catch (IllegalArgumentException | NoSuchElementException e) {
+            return ResponseEntity.badRequest().body(
+                    new CollectionResponseBody(e.getMessage(), false, null)
+            );
         }
 
         return ResponseEntity.ok(

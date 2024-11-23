@@ -52,7 +52,8 @@ public class CommentService {
 
             post.getComments().addLast(savedComment.getId()); // Post::getComments should not return null
             postRepository.save(post);
-        } catch (OptimisticLockingFailureException e) {
+        }
+        catch (OptimisticLockingFailureException e) {
             throw new InternalError("Internal error. Try again later.");
         }
 
@@ -73,7 +74,8 @@ public class CommentService {
             commentRepository.deleteById(commentId);
             post.getComments().remove(commentId);
             postRepository.save(post);
-        } catch (NullPointerException ignored) {
+        }
+        catch (NullPointerException ignored) {
         } // TODO: reconsider this
         catch (OptimisticLockingFailureException e) {
             throw new InternalError("Internal error. Try again later.");

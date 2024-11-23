@@ -1,6 +1,6 @@
 package com.screenvault.screenvaultAPI.post;
 
-public record UploadPostResponseBody(
+public record PostResponseBody(
         String message,
         boolean success,
         Post post

@@ -2,6 +2,7 @@ package com.screenvault.screenvaultAPI.comment;
 
 import org.springframework.dao.PermissionDeniedDataAccessException;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,9 +40,11 @@ public class CommentController {
 
         try {
             savedComment = commentService.uploadComment(token, requestBody.postId(), requestBody.comment());
-        } catch (IllegalArgumentException | NoSuchElementException e) {
-            return ResponseEntity.badRequest()
-                    .body(new CommentResponseBody(e.getMessage(), false, null));
+        }
+        catch (IllegalArgumentException | NoSuchElementException e) {
+            return ResponseEntity.badRequest().body(
+                    new CommentResponseBody(e.getMessage(), false, null)
+            );
         }
 
         return ResponseEntity.ok(
@@ -57,12 +60,21 @@ public class CommentController {
     ) {
         try {
             commentService.deleteComment(token, requestBody.postId(), requestBody.commentId());
-        } catch (IllegalArgumentException | PermissionDeniedDataAccessException e) {
-            return ResponseEntity.badRequest()
-                    .body(new CommentResponseBody(e.getMessage(), false, null));
-        } catch (InternalError e) {
-            return ResponseEntity.internalServerError()
-                    .body(new CommentResponseBody(e.getMessage(), false, null));
+        }
+        catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(
+                    new CommentResponseBody(e.getMessage(), false, null)
+            );
+        }
+        catch (PermissionDeniedDataAccessException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    new CommentResponseBody(e.getMessage(), false, null)
+            );
+        }
+        catch (InternalError e) {
+            return ResponseEntity.internalServerError().body(
+                    new CommentResponseBody(e.getMessage(), false, null)
+            );
         }
 
         return ResponseEntity.ok(

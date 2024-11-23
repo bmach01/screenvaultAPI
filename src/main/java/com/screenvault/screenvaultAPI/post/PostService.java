@@ -68,7 +68,8 @@ public class PostService {
                 imageRepository.uploadPrivateImage(image, post.getId().toString());
 
             savedPost = postRepository.save(post);
-        } catch (OptimisticLockingFailureException e) {
+        }
+        catch (OptimisticLockingFailureException e) {
             throw new InternalError("Internal error. Try again later.");
         }
 
@@ -85,11 +86,36 @@ public class PostService {
                 throw new PermissionDeniedDataAccessException("Collection is not principal's.", null);
 
             postRepository.deleteById(postId);
-        } catch (NullPointerException ignored) {
+        }
+        catch (NullPointerException ignored) {
         } // TODO: reconsider this
         catch (OptimisticLockingFailureException e) {
             throw new InternalError("Internal error. Try again later.");
         }
 
+    }
+
+    public Post changePostVisiblity(String token, UUID postId, boolean toPublic)
+            throws IllegalArgumentException, PermissionDeniedDataAccessException, InternalError {
+        String username = jwtService.extractUsername(token);
+        Post post = null;
+        try {
+            post = postRepository.findById(postId).orElseThrow();
+            if (!post.getPosterUsername().equals(username))
+                throw new PermissionDeniedDataAccessException("Collection is not principal's.", null);
+
+            post.setPublic(toPublic);
+            if (toPublic) imageRepository.upateImageToPublic(post.getId().toString());
+            else imageRepository.updateImageToPrivate(post.getId().toString());
+
+            postRepository.save(post);
+        }
+        catch (NullPointerException ignored) {
+        } // TODO: reconsider this
+        catch (OptimisticLockingFailureException e) {
+            throw new InternalError("Internal error. Try again later.");
+        }
+
+        return post;
     }
 }

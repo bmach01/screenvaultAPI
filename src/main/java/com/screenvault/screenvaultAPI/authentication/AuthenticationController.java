@@ -25,7 +25,8 @@ public class AuthenticationController {
         User user = null;
         try {
             user = authenticationService.register(request);
-        } catch (IllegalArgumentException e) {
+        }
+        catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new AuthenticationResponseBody(e.getMessage(), false));
         }
         return ResponseEntity.ok(
@@ -41,9 +42,11 @@ public class AuthenticationController {
         TokensDTO data = null;
         try {
             data = authenticationService.login(basicAuthorizationHeader);
-        } catch (BadCredentialsException e) {
+        }
+        catch (BadCredentialsException e) {
             return ResponseEntity.notFound().build();
-        } catch (IllegalArgumentException e) {
+        }
+        catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new AuthenticationResponseBody(e.getMessage(), false));
         }
 
@@ -70,7 +73,8 @@ public class AuthenticationController {
         String newToken = null;
         try {
             newToken = authenticationService.refreshToken(refreshToken);
-        } catch (BadCredentialsException e) {
+        }
+        catch (BadCredentialsException e) {
             return ResponseEntity.notFound().build();
         }
 

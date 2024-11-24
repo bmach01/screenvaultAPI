@@ -4,6 +4,7 @@ import com.screenvault.screenvaultAPI.jwt.JwtType;
 import com.screenvault.screenvaultAPI.user.User;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
@@ -44,7 +45,9 @@ public class AuthenticationController {
             data = authenticationService.login(basicAuthorizationHeader);
         }
         catch (BadCredentialsException e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.valueOf(401)).body(
+                    new AuthenticationResponseBody(e.getMessage(), false)
+            );
         }
         catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new AuthenticationResponseBody(e.getMessage(), false));

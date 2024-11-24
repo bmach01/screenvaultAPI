@@ -40,9 +40,11 @@ public class ImageRepository {
             );
         }
         catch (InvalidKeyException e) {
+            System.out.println(e.getMessage());
             throw new InternalError(e.getMessage());
         }
         catch (Exception e) {
+            System.out.println(e.getMessage());
             throw new InternalError("Internal error. Try again later.");
         }
     }
@@ -83,6 +85,24 @@ public class ImageRepository {
             throw new InternalError(e.getMessage());
         }
         catch (Exception e) {
+            throw new InternalError("Internal error. Try again later.");
+        }
+    }
+
+    public void test() {
+        try {
+            minioClient.makeBucket(
+                    MakeBucketArgs.builder()
+                            .bucket(PRIVATE_BUCKET)
+                            .build()
+            );
+        }
+        catch (InvalidKeyException e) {
+            System.out.println(e.getMessage());
+            throw new InternalError(e.getMessage());
+        }
+        catch (Exception e) {
+            System.out.println(e.getMessage());
             throw new InternalError("Internal error. Try again later.");
         }
     }

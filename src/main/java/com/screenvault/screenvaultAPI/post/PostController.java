@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.NoSuchElementException;
+
 @RestController
 @RequestMapping("/post")
 public class PostController {
@@ -64,6 +66,27 @@ public class PostController {
         }
 
         return ResponseEntity.ok(posts);
+    }
+
+    @GetMapping("/getPostById")
+    public ResponseEntity<Post> getPostById(
+            @RequestBody GetPostsRequestBody requestBody,
+            // JwtType.ACCESS_TOKEN.name()
+            @CookieValue("ACCESS_TOKEN") String token
+    ) {
+        Post post = null;
+        try {
+            post = postService.getPostById(requestBody.postId());
+            postService.incrementViewCountAndSave(post); // This has to be done outside the method class
+        }
+        catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
+
+        if (token != null) {
+            ratingService.addUserRatingToPosts(token, post);
+        }
+        return ResponseEntity.ok(post);
     }
 
     @PostMapping("/uploadPost")
@@ -130,7 +153,7 @@ public class PostController {
         );
     }
 
-    @PutMapping("/updatePostVisibility")
+    @PatchMapping("/updatePostVisibility")
     public ResponseEntity<PostResponseBody> changePostVisibility(
             @RequestBody UpdatePostVisibilityRequestBody requestBody,
             // JwtType.ACCESS_TOKEN.name()
@@ -146,7 +169,8 @@ public class PostController {
                     new PostResponseBody(e.getMessage(), false, null)
             );
         }
-        catch (PermissionDeniedDataAccessException e) {
+        catch (PermissionDeniedDataAccessException |
+               NoSuchElementException e) { // TODO: reconsider NoSuchElementException being handled this way (privacy)
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
                     new PostResponseBody(e.getMessage(), false, null)
             );

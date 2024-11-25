@@ -42,6 +42,13 @@ public class RatingService {
         });
     }
 
+    public void addUserRatingToPosts(String token, Post post) {
+        String username = jwtService.extractUsername(token);
+        ratingRepository.findById(new RatingKey(post.getId(), username)).ifPresent(
+                rating -> post.setMyScore(rating.getRated())
+        );
+    }
+
     public Rating postRating(String token, Rating.Score score, UUID postId)
             throws InternalError, IllegalArgumentException, NoSuchElementException {
         String username = jwtService.extractUsername(token);

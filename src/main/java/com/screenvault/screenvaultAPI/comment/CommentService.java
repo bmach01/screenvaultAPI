@@ -1,6 +1,5 @@
 package com.screenvault.screenvaultAPI.comment;
 
-import com.screenvault.screenvaultAPI.jwt.JwtService;
 import com.screenvault.screenvaultAPI.post.Post;
 import com.screenvault.screenvaultAPI.post.PostRepository;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -19,12 +18,10 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
-    private final JwtService jwtService;
 
-    public CommentService(CommentRepository commentRepository, PostRepository postRepository, JwtService jwtService) {
+    public CommentService(CommentRepository commentRepository, PostRepository postRepository) {
         this.commentRepository = commentRepository;
         this.postRepository = postRepository;
-        this.jwtService = jwtService;
     }
 
     public Page<Comment> getCommentsByPostId(UUID postId, int page, int pageSize)
@@ -36,11 +33,12 @@ public class CommentService {
     }
 
 
-    public Comment uploadComment(String token, UUID postId, Comment comment)
-            throws IllegalArgumentException, NoSuchElementException, InternalError {
+    public Comment uploadComment(String username, UUID postId, Comment comment)
+            throws IllegalArgumentException, NoSuchElementException, InternalError
+    {
         Comment savedComment = null;
         comment.setPostedOn(new Date());
-        comment.setUsername(jwtService.extractUsername(token));
+        comment.setUsername(username);
 
         Post post = null;
 
@@ -60,14 +58,15 @@ public class CommentService {
         return savedComment;
     }
 
-    public void deleteComment(String token, UUID postId, UUID commentId)
-            throws IllegalArgumentException, PermissionDeniedDataAccessException, InternalError {
+    public void deleteComment(String username, UUID postId, UUID commentId)
+            throws IllegalArgumentException, PermissionDeniedDataAccessException, InternalError
+    {
         Comment comment = null;
         Post post = null;
 
         try {
             comment = commentRepository.findById(commentId).orElseThrow();
-            if (!comment.getUsername().equals(jwtService.extractUsername(token)))
+            if (!comment.getUsername().equals(username))
                 throw new PermissionDeniedDataAccessException("Collection is not principal's.", null);
 
             post = postRepository.findById(postId).orElseThrow();

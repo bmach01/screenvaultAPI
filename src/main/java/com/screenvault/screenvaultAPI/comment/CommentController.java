@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.NoSuchElementException;
 
 @RestController
@@ -18,7 +19,7 @@ public class CommentController {
         this.commentService = commentService;
     }
 
-    @GetMapping("/getCommentsUnderPost")
+    @GetMapping("/noAuth/getCommentsUnderPost")
     public ResponseEntity<Page<Comment>> getCommentsUnderPost(
             @RequestBody GetCommentsRequestBody requestBody
     ) {
@@ -33,13 +34,16 @@ public class CommentController {
     @PostMapping("/postComment")
     public ResponseEntity<CommentResponseBody> postCommentUnderPost(
             @RequestBody PostCommentRequestBody requestBody,
-            // JwtType.ACCESS_TOKEN.name()
-            @CookieValue("ACCESS_TOKEN") String token
+            Principal principal
     ) {
-        Comment savedComment = null;
+        if (principal == null)
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    new CommentResponseBody("Sign in to manage comments.", false, null)
+            );
 
+        Comment savedComment = null;
         try {
-            savedComment = commentService.uploadComment(token, requestBody.postId(), requestBody.comment());
+            savedComment = commentService.uploadComment(principal.getName(), requestBody.postId(), requestBody.comment());
         }
         catch (IllegalArgumentException | NoSuchElementException e) {
             return ResponseEntity.badRequest().body(
@@ -55,11 +59,15 @@ public class CommentController {
     @DeleteMapping("/deleteComment")
     public ResponseEntity<CommentResponseBody> deleteComment(
             @RequestBody DeleteCommentRequestBody requestBody,
-            // JwtType.ACCESS_TOKEN.name()
-            @CookieValue("ACCESS_TOKEN") String token
+            Principal principal
     ) {
+        if (principal == null)
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    new CommentResponseBody("Sign in to manage comments.", false, null)
+            );
+
         try {
-            commentService.deleteComment(token, requestBody.postId(), requestBody.commentId());
+            commentService.deleteComment(principal.getName(), requestBody.postId(), requestBody.commentId());
         }
         catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(

@@ -19,7 +19,7 @@ public class AuthenticationController {
         this.authenticationService = authenticationService;
     }
 
-    @PostMapping("/register")
+    @PostMapping("/noAuth/register")
     public ResponseEntity<AuthenticationResponseBody> register(
             @RequestBody User request
     ) {
@@ -35,7 +35,7 @@ public class AuthenticationController {
         );
     }
 
-    @PostMapping("/login")
+    @PostMapping("/noAuth/login")
     public ResponseEntity<AuthenticationResponseBody> login(
             @RequestHeader("Authorization") String basicAuthorizationHeader,
             HttpServletResponse response
@@ -59,7 +59,7 @@ public class AuthenticationController {
 
         Cookie refreshCookie = new Cookie(JwtType.REFRESH_TOKEN.name(), data.refreshToken());
         refreshCookie.setHttpOnly(true);
-        refreshCookie.setPath("/authentication/refreshToken");
+        refreshCookie.setPath("/authentication/noAuth/refreshToken");
 
         response.addCookie(tokenCookie);
         response.addCookie(refreshCookie);
@@ -67,7 +67,7 @@ public class AuthenticationController {
         return ResponseEntity.ok(new AuthenticationResponseBody("Successfully authenticated.", true));
     }
 
-    @GetMapping("/refreshToken")
+    @GetMapping("/noAuth/refreshToken")
     public ResponseEntity<AuthenticationResponseBody> refreshToken(
             // JwtType.REFRESH_TOKEN.name() <-- annotation can't use variable value
             @CookieValue("REFRESH_TOKEN") String refreshToken,

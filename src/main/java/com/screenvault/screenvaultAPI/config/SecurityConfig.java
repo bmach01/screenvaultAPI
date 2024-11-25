@@ -15,12 +15,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import java.util.List;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     private final UserDetailsServiceImpl userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final static List<String> CONTROLLERS = List.of("authentication", "collection", "comment", "post", "rating", "test");
 
     public SecurityConfig(UserDetailsServiceImpl userDetailsService, JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.userDetailsService = userDetailsService;
@@ -31,12 +34,13 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
                 .csrf(AbstractHttpConfigurer::disable) // TODO: to be decided
-                .authorizeHttpRequests(
-                        req -> req.requestMatchers("/authentication/**").permitAll()
-                                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-//                                .requestMatchers("**/authenticated/**").authenticated()
-                                .anyRequest()
-                                .authenticated()
+                .authorizeHttpRequests(request -> {
+                            CONTROLLERS.forEach(controller -> request.requestMatchers(
+                                    "/" + controller + "/noAuth/**"
+                            ).permitAll());
+
+                            request.anyRequest().authenticated();
+                        }
                 )
                 .userDetailsService(userDetailsService)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

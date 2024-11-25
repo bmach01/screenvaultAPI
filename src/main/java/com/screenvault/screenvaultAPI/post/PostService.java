@@ -1,6 +1,5 @@
 package com.screenvault.screenvaultAPI.post;
 
-import com.screenvault.screenvaultAPI.jwt.JwtService;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.dao.PermissionDeniedDataAccessException;
 import org.springframework.data.domain.Page;
@@ -21,16 +20,13 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final ImageRepository imageRepository;
-    private final JwtService jwtService;
 
     public PostService(
             PostRepository postRepository,
-            ImageRepository imageRepository,
-            JwtService jwtService
+            ImageRepository imageRepository
     ) {
         this.postRepository = postRepository;
         this.imageRepository = imageRepository;
-        this.jwtService = jwtService;
     }
 
     private boolean isValidImageType(String type) {
@@ -81,15 +77,16 @@ public class PostService {
         return post;
     }
 
-    public Post uploadPost(String token, Post post, boolean isPublic, MultipartFile image)
-            throws InternalError, IllegalArgumentException {
+    public Post uploadPost(String username, Post post, boolean isPublic, MultipartFile image)
+            throws InternalError, IllegalArgumentException
+    {
         if (image == null) throw new IllegalArgumentException("Image must not be null.");
         if (image.isEmpty()) throw new IllegalArgumentException("Image must not be empty.");
         if (!isValidImageType(image.getContentType()))
             throw new IllegalArgumentException("Image type not supported.");
 
         post.setPublic(isPublic);
-        post.setPosterUsername(jwtService.extractUsername(token));
+        post.setPosterUsername(username);
         post.setPostedOn(new Date());
 
         Post savedPost = null;
@@ -109,14 +106,13 @@ public class PostService {
         return savedPost;
     }
 
-    public void deletePost(String token, UUID postId)
-            throws IllegalArgumentException, PermissionDeniedDataAccessException, InternalError {
-        String username = jwtService.extractUsername(token);
-
+    public void deletePost(String username, UUID postId)
+            throws IllegalArgumentException, PermissionDeniedDataAccessException, InternalError
+    {
         try {
             Post post = postRepository.findById(postId).orElseThrow();
             if (!post.getPosterUsername().equals(username))
-                throw new PermissionDeniedDataAccessException("Collection is not principal's.", null);
+                throw new PermissionDeniedDataAccessException("Post is not principal's.", null);
 
             postRepository.deleteById(postId);
         }
@@ -128,16 +124,16 @@ public class PostService {
 
     }
 
-    public Post changePostVisiblity(String token, UUID postId, boolean toPublic)
-            throws IllegalArgumentException, PermissionDeniedDataAccessException, InternalError {
-        String username = jwtService.extractUsername(token);
+    public Post changePostVisiblity(String username, UUID postId, boolean toPublic)
+            throws IllegalArgumentException, PermissionDeniedDataAccessException, InternalError
+    {
         Post post = null;
         try {
             post = postRepository.findById(postId).orElseThrow();
             if (post.isPublic() == toPublic) return post;
 
             if (!post.getPosterUsername().equals(username))
-                throw new PermissionDeniedDataAccessException("Collection is not principal's.", null);
+                throw new PermissionDeniedDataAccessException("Post is not principal's.", null);
 
             if (toPublic) imageRepository.moveImageToPublic(post.getId().toString());
             else imageRepository.moveImageToPrivate(post.getId().toString());

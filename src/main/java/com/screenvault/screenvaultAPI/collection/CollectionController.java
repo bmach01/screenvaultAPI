@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -19,22 +20,27 @@ public class CollectionController {
 
     @GetMapping("/getMyCollections")
     public ResponseEntity<List<Collection>> getCollectionsByUserId(
-            // JwtType.ACCESS_TOKEN.name()
-            @CookieValue("ACCESS_TOKEN") String token
+            Principal principal
     ) {
-        return ResponseEntity.ok(collectionService.getMyCollections(token));
+        if (principal == null)
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
+        return ResponseEntity.ok(collectionService.getMyCollections(principal.getName()));
     }
 
-    @PutMapping("/addPostToMyCollection")
+    @PatchMapping("/addPostToMyCollection")
     public ResponseEntity<CollectionResponseBody> addPostToMyCollection(
             @RequestBody AddPostToCollectionRequestBody requestBody,
-            // JwtType.ACCESS_TOKEN.name()
-            @CookieValue("ACCESS_TOKEN") String token
+            Principal principal
     ) {
-        Collection collection = null;
+        if (principal == null)
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    new CollectionResponseBody("Sign in to manage collections.", false, null)
+            );
 
+        Collection collection = null;
         try {
-            collection = collectionService.addPostToMyCollection(token, requestBody.postId(), requestBody.collectionId());
+            collection = collectionService.addPostToMyCollection(principal.getName(), requestBody.postId(), requestBody.collectionId());
         }
         catch (IllegalArgumentException | NoSuchElementException e) {
             return ResponseEntity.badRequest().body(
@@ -62,13 +68,17 @@ public class CollectionController {
     @PostMapping("/postCollection")
     public ResponseEntity<CollectionResponseBody> createNewCollection(
             @RequestBody PostCollectionRequestBody requestBody,
-            // JwtType.ACCESS_TOKEN.name()
-            @CookieValue("ACCESS_TOKEN") String token
+            Principal principal
     ) {
+        if (principal == null)
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    new CollectionResponseBody("Sign in to manage collections.", false, null)
+            );
+
         Collection savedCollection = null;
 
         try {
-            savedCollection = collectionService.uploadCollection(token, requestBody.collection());
+            savedCollection = collectionService.uploadCollection(principal.getName(), requestBody.collection());
         }
         catch (IllegalArgumentException | NoSuchElementException e) {
             return ResponseEntity.badRequest().body(
@@ -77,7 +87,7 @@ public class CollectionController {
         }
 
         return ResponseEntity.ok(
-                new CollectionResponseBody("Successfully uploaded comment", true, savedCollection)
+                new CollectionResponseBody("Successfully created new collection", true, savedCollection)
         );
     }
 

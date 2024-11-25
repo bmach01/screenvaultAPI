@@ -1,6 +1,5 @@
 package com.screenvault.screenvaultAPI.rating;
 
-import com.screenvault.screenvaultAPI.jwt.JwtService;
 import com.screenvault.screenvaultAPI.post.Post;
 import com.screenvault.screenvaultAPI.post.PostRepository;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -18,17 +17,14 @@ import java.util.stream.Collectors;
 public class RatingService {
 
     private final RatingRepository ratingRepository;
-    private final JwtService jwtService;
     private final PostRepository postRepository;
 
-    public RatingService(RatingRepository ratingRepository, JwtService jwtService, PostRepository postRepository) {
+    public RatingService(RatingRepository ratingRepository, PostRepository postRepository) {
         this.ratingRepository = ratingRepository;
-        this.jwtService = jwtService;
         this.postRepository = postRepository;
     }
 
-    public void addUserRatingToPosts(String token, Page<Post> posts) {
-        String username = jwtService.extractUsername(token);
+    public void addUserRatingToPosts(String username, Page<Post> posts) {
         List<Rating> ratings = ratingRepository.findByIdIn(
                 posts.getContent().stream().map(post -> new RatingKey(post.getId(), username)).toList()
         );
@@ -42,16 +38,15 @@ public class RatingService {
         });
     }
 
-    public void addUserRatingToPosts(String token, Post post) {
-        String username = jwtService.extractUsername(token);
+    public void addUserRatingToPosts(String username, Post post) {
         ratingRepository.findById(new RatingKey(post.getId(), username)).ifPresent(
                 rating -> post.setMyScore(rating.getRated())
         );
     }
 
-    public Rating postRating(String token, Rating.Score score, UUID postId)
-            throws InternalError, IllegalArgumentException, NoSuchElementException {
-        String username = jwtService.extractUsername(token);
+    public Rating postRating(String username, Rating.Score score, UUID postId)
+            throws InternalError, IllegalArgumentException, NoSuchElementException
+    {
         Rating rating = ratingRepository.findById(new RatingKey(postId, username)).orElse(null);
         Post post = postRepository.findById(postId).orElseThrow();
 
@@ -78,9 +73,9 @@ public class RatingService {
         return rating;
     }
 
-    public void deleteRating(String token, UUID postId)
-            throws PermissionDeniedDataAccessException, InternalError, IllegalArgumentException, NoSuchElementException {
-        String username = jwtService.extractUsername(token);
+    public void deleteRating(String username, UUID postId)
+            throws PermissionDeniedDataAccessException, InternalError, IllegalArgumentException, NoSuchElementException
+    {
         Rating rating = ratingRepository.findById(new RatingKey(postId, username)).orElseThrow();
         Post post = postRepository.findById(rating.getId().getPostId()).orElseThrow();
 

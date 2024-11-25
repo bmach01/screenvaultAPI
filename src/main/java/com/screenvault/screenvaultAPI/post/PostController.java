@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.security.Principal;
 import java.util.NoSuchElementException;
 
 @RestController
@@ -23,56 +24,52 @@ public class PostController {
         this.ratingService = ratingService;
     }
 
-    @GetMapping("/getLandingPagePosts")
+    @GetMapping("/noAuth/getLandingPagePosts")
     public ResponseEntity<Page<Post>> getLandingPagePosts(
             @RequestBody GetPostsRequestBody requestBody,
-            // JwtType.ACCESS_TOKEN.name()
-            @CookieValue("ACCESS_TOKEN") String token
+            Principal principal
     ) {
         Page<Post> posts = postService.getLandingPagePostsPage(requestBody.page(), requestBody.pageSize());
 
-        if (token != null) {
-            ratingService.addUserRatingToPosts(token, posts);
+        if (principal != null) {
+            ratingService.addUserRatingToPosts(principal.getName(), posts);
         }
 
         return ResponseEntity.ok(posts);
     }
 
-    @GetMapping("/getPostsByTitles")
+    @GetMapping("/noAuth/getPostsByTitles")
     public ResponseEntity<Page<Post>> getPostsByTitles(
             @RequestBody GetPostsRequestBody requestBody,
-            // JwtType.ACCESS_TOKEN.name()
-            @CookieValue("ACCESS_TOKEN") String token
+            Principal principal
     ) {
         Page<Post> posts = postService.getPostsByTitle(requestBody.title(), requestBody.page(), requestBody.pageSize());
 
-        if (token != null) {
-            ratingService.addUserRatingToPosts(token, posts);
+        if (principal != null) {
+            ratingService.addUserRatingToPosts(principal.getName(), posts);
         }
 
         return ResponseEntity.ok(posts);
     }
 
-    @GetMapping("/getPostsByTags")
+    @GetMapping("/noAuth/getPostsByTags")
     public ResponseEntity<Page<Post>> getPostsByTags(
             @RequestBody GetPostsRequestBody requestBody,
-            // JwtType.ACCESS_TOKEN.name()
-            @CookieValue("ACCESS_TOKEN") String token
+            Principal principal
     ) {
         Page<Post> posts = postService.getPostsByTags(requestBody.tags(), requestBody.page(), requestBody.pageSize());
 
-        if (token != null) {
-            ratingService.addUserRatingToPosts(token, posts);
+        if (principal != null) {
+            ratingService.addUserRatingToPosts(principal.getName(), posts);
         }
 
         return ResponseEntity.ok(posts);
     }
 
-    @GetMapping("/getPostById")
+    @GetMapping("/noAuth/getPostById")
     public ResponseEntity<Post> getPostById(
             @RequestBody GetPostsRequestBody requestBody,
-            // JwtType.ACCESS_TOKEN.name()
-            @CookieValue("ACCESS_TOKEN") String token
+            Principal principal
     ) {
         Post post = null;
         try {
@@ -83,18 +80,17 @@ public class PostController {
             return ResponseEntity.notFound().build();
         }
 
-        if (token != null) {
-            ratingService.addUserRatingToPosts(token, post);
+        if (principal != null) {
+            ratingService.addUserRatingToPosts(principal.getName(), post);
         }
         return ResponseEntity.ok(post);
     }
 
-    @PostMapping("/uploadPost")
+    @PostMapping("/noAuth/uploadPost")
     public ResponseEntity<PostResponseBody> uploadPost(
             @RequestParam String postRequest,
             @RequestParam MultipartFile image,
-            // JwtType.ACCESS_TOKEN.name()
-            @CookieValue("ACCESS_TOKEN") String token
+            Principal principal
     ) {
         UploadPostRequestParam postRequestDTO = null;
         try {
@@ -106,8 +102,9 @@ public class PostController {
         }
 
         Post savedPost = null;
+        String username = principal == null ? "Anonymous" : principal.getName();
         try {
-            savedPost = postService.uploadPost(token, postRequestDTO.post(), postRequestDTO.isPublic(), image);
+            savedPost = postService.uploadPost(username, postRequestDTO.post(), postRequestDTO.isPublic(), image);
         }
         catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
@@ -126,11 +123,15 @@ public class PostController {
     @DeleteMapping("/deletePost")
     public ResponseEntity<PostResponseBody> deletePost(
             @RequestBody DeletePostRequestBody requestBody,
-            // JwtType.ACCESS_TOKEN.name()
-            @CookieValue("ACCESS_TOKEN") String token
+            Principal principal
     ) {
+        if (principal == null)
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                new PostResponseBody("Sign in to manage posts.", false, null)
+            );
+
         try {
-            postService.deletePost(token, requestBody.postId());
+            postService.deletePost(principal.getName(), requestBody.postId());
         }
         catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(
@@ -156,12 +157,16 @@ public class PostController {
     @PatchMapping("/updatePostVisibility")
     public ResponseEntity<PostResponseBody> changePostVisibility(
             @RequestBody UpdatePostVisibilityRequestBody requestBody,
-            // JwtType.ACCESS_TOKEN.name()
-            @CookieValue("ACCESS_TOKEN") String token
+            Principal principal
     ) {
+        if (principal == null)
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    new PostResponseBody("Sign in to manage posts.", false, null)
+            );
+
         Post updatedPost = null;
         try {
-            updatedPost = postService.changePostVisiblity(token, requestBody.postId(), requestBody.toPublic());
+            updatedPost = postService.changePostVisiblity(principal.getName(), requestBody.postId(), requestBody.toPublic());
 
         }
         catch (IllegalArgumentException e) {

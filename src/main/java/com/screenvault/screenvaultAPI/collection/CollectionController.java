@@ -91,4 +91,38 @@ public class CollectionController {
         );
     }
 
+    @DeleteMapping("/deleteCollection")
+    public ResponseEntity<CollectionResponseBody> deleteCollection(
+            @RequestBody DeleteCollectionRequestBody requestBody,
+            Principal principal
+    ) {
+        if (principal == null)
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    new CollectionResponseBody("Sign in to manage collections.", false, null)
+            );
+
+        try {
+            collectionService.deleteCollection(principal.getName(), requestBody.collectionId());
+        }
+        catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(
+                    new CollectionResponseBody(e.getMessage(), false, null)
+            );
+        }
+        catch (PermissionDeniedDataAccessException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    new CollectionResponseBody(e.getMessage(), false, null)
+            );
+        }
+        catch (InternalError e) {
+            return ResponseEntity.internalServerError().body(
+                    new CollectionResponseBody(e.getMessage(), false, null)
+            );
+        }
+
+        return ResponseEntity.ok(
+                new CollectionResponseBody("Successfully deleted the collection.", true, null)
+        );
+    }
+
 }

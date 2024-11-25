@@ -68,4 +68,18 @@ public class CollectionService {
         return mongoTemplate.updateFirst(query, update, Collection.class).getModifiedCount() != 0;
     }
 
+    public void deleteCollection(String username, UUID collectionId) {
+        try {
+            Collection collection = collectionRepository.findById(collectionId).orElseThrow();
+            if (!collection.getOwnerUsername().equals(username))
+                throw new PermissionDeniedDataAccessException("Collection is not principal's.", null);
+
+            collectionRepository.deleteById(collection.getId());
+        }
+        catch (NullPointerException ignored) {
+        } // TODO: reconsider this
+        catch (OptimisticLockingFailureException e) {
+            throw new InternalError("Internal error. Try again later.");
+        }
+    }
 }

@@ -74,7 +74,7 @@ public class CommentController {
                     new CommentResponseBody(e.getMessage(), false, null)
             );
         }
-        catch (PermissionDeniedDataAccessException e) {
+        catch (PermissionDeniedDataAccessException | NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
                     new CommentResponseBody(e.getMessage(), false, null)
             );

@@ -138,7 +138,7 @@ public class PostController {
                     new PostResponseBody(e.getMessage(), false, null)
             );
         }
-        catch (PermissionDeniedDataAccessException e) {
+        catch (PermissionDeniedDataAccessException | NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
                     new PostResponseBody(e.getMessage(), false, null)
             );
@@ -174,8 +174,7 @@ public class PostController {
                     new PostResponseBody(e.getMessage(), false, null)
             );
         }
-        catch (PermissionDeniedDataAccessException |
-               NoSuchElementException e) { // TODO: reconsider NoSuchElementException being handled this way (privacy)
+        catch (PermissionDeniedDataAccessException | NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
                     new PostResponseBody(e.getMessage(), false, null)
             );

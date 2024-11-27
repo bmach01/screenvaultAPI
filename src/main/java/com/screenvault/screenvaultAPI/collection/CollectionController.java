@@ -80,7 +80,7 @@ public class CollectionController {
         try {
             savedCollection = collectionService.uploadCollection(principal.getName(), requestBody.collection());
         }
-        catch (IllegalArgumentException | NoSuchElementException e) {
+        catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(
                     new CollectionResponseBody(e.getMessage(), false, null)
             );
@@ -109,7 +109,7 @@ public class CollectionController {
                     new CollectionResponseBody(e.getMessage(), false, null)
             );
         }
-        catch (PermissionDeniedDataAccessException e) {
+        catch (PermissionDeniedDataAccessException | NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
                     new CollectionResponseBody(e.getMessage(), false, null)
             );

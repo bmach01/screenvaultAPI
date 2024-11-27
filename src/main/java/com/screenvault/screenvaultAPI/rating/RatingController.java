@@ -38,7 +38,12 @@ public class RatingController {
                     new RatingResponseBody(e.getMessage(), false, null)
             );
         }
-        catch (Exception e) {
+        catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    new RatingResponseBody(e.getMessage(), false, null)
+            );
+        }
+        catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(
                     new RatingResponseBody(e.getMessage(), false, null)
             );
@@ -66,12 +71,12 @@ public class RatingController {
                     new RatingResponseBody(e.getMessage(), false, null)
             );
         }
-        catch (IllegalArgumentException | NoSuchElementException e) {
+        catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(
                     new RatingResponseBody(e.getMessage(), false, null)
             );
         }
-        catch (PermissionDeniedDataAccessException e) {
+        catch (PermissionDeniedDataAccessException | NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
                     new RatingResponseBody(e.getMessage(), false, null)
             );

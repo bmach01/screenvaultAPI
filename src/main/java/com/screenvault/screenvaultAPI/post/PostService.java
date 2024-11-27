@@ -107,7 +107,7 @@ public class PostService {
     }
 
     public void deletePost(String username, UUID postId)
-            throws IllegalArgumentException, PermissionDeniedDataAccessException, InternalError
+            throws IllegalArgumentException, PermissionDeniedDataAccessException, InternalError, NoSuchElementException
     {
         try {
             Post post = postRepository.findById(postId).orElseThrow();
@@ -116,8 +116,6 @@ public class PostService {
 
             postRepository.deleteById(postId);
         }
-        catch (NullPointerException ignored) {
-        } // TODO: reconsider this
         catch (OptimisticLockingFailureException e) {
             throw new InternalError("Internal error. Try again later.");
         }
@@ -125,7 +123,7 @@ public class PostService {
     }
 
     public Post changePostVisiblity(String username, UUID postId, boolean toPublic)
-            throws IllegalArgumentException, PermissionDeniedDataAccessException, InternalError
+            throws IllegalArgumentException, PermissionDeniedDataAccessException, InternalError, NoSuchElementException
     {
         Post post = null;
         try {
@@ -141,13 +139,10 @@ public class PostService {
             post.setPublic(toPublic);
             postRepository.save(post);
         }
-        catch (NullPointerException ignored) {
-        } // TODO: reconsider this
         catch (OptimisticLockingFailureException e) {
             throw new InternalError("Internal error. Try again later.");
         }
 
-        assert post != null;
         post.setImageUrl(getImageUrlForPost(post));
         return post;
     }

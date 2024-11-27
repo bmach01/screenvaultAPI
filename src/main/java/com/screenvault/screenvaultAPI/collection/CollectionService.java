@@ -46,7 +46,8 @@ public class CollectionService {
     }
 
     public Collection uploadCollection(String username, Collection collection)
-            throws IllegalArgumentException, OptimisticLockingFailureException {
+            throws IllegalArgumentException, OptimisticLockingFailureException
+    {
         Collection savedCollection = null;
         collection.setGlobal(false);
         collection.setOwnerUsername(username);
@@ -68,7 +69,9 @@ public class CollectionService {
         return mongoTemplate.updateFirst(query, update, Collection.class).getModifiedCount() != 0;
     }
 
-    public void deleteCollection(String username, UUID collectionId) {
+    public void deleteCollection(String username, UUID collectionId)
+        throws IllegalArgumentException, NoSuchElementException
+    {
         try {
             Collection collection = collectionRepository.findById(collectionId).orElseThrow();
             if (!collection.getOwnerUsername().equals(username))
@@ -76,8 +79,6 @@ public class CollectionService {
 
             collectionRepository.deleteById(collection.getId());
         }
-        catch (NullPointerException ignored) {
-        } // TODO: reconsider this
         catch (OptimisticLockingFailureException e) {
             throw new InternalError("Internal error. Try again later.");
         }

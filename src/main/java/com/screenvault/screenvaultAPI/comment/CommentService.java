@@ -25,7 +25,8 @@ public class CommentService {
     }
 
     public Page<Comment> getCommentsByPostId(UUID postId, int page, int pageSize)
-            throws IllegalArgumentException, NoSuchElementException {
+            throws IllegalArgumentException, NoSuchElementException
+    {
         // TODO: get comments ONLY under post by post id
         Post post = postRepository.findById(postId).orElseThrow();
 
@@ -59,7 +60,7 @@ public class CommentService {
     }
 
     public void deleteComment(String username, UUID postId, UUID commentId)
-            throws IllegalArgumentException, PermissionDeniedDataAccessException, InternalError
+            throws IllegalArgumentException, PermissionDeniedDataAccessException, InternalError, NoSuchElementException
     {
         Comment comment = null;
         Post post = null;
@@ -74,8 +75,6 @@ public class CommentService {
             post.getComments().remove(commentId);
             postRepository.save(post);
         }
-        catch (NullPointerException ignored) {
-        } // TODO: reconsider this
         catch (OptimisticLockingFailureException e) {
             throw new InternalError("Internal error. Try again later.");
         }

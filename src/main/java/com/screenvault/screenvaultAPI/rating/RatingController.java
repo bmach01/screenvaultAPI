@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.NoSuchElementException;
 
 
@@ -21,14 +22,16 @@ public class RatingController {
     @PostMapping("/postRating")
     public ResponseEntity<RatingResponseBody> postRating(
             @RequestBody PostNewRatingRequestBody requestBody,
-            // JwtType.ACCESS_TOKEN.name()
-            @CookieValue("ACCESS_TOKEN") String token
-
+            Principal principal
     ) {
-        Rating rating = null;
+        if (principal == null)
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    new RatingResponseBody("Sign in to post ratings.", false, null)
+            );
 
+        Rating rating = null;
         try {
-            rating = ratingService.postRating(token, requestBody.score(), requestBody.postId());
+            rating = ratingService.postRating(principal.getName(), requestBody.score(), requestBody.postId());
         }
         catch (InternalError e) {
             return ResponseEntity.internalServerError().body(
@@ -48,11 +51,15 @@ public class RatingController {
     @DeleteMapping("/deleteRating")
     public ResponseEntity<RatingResponseBody> deleteRating(
             @RequestBody DeleteRatingRequestBody requestBody,
-            // JwtType.ACCESS_TOKEN.name()
-            @CookieValue("ACCESS_TOKEN") String token
+            Principal principal
     ) {
+        if (principal == null)
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    new RatingResponseBody("Sign in to manage ratings.", false, null)
+            );
+
         try {
-            ratingService.deleteRating(token, requestBody.postId());
+            ratingService.deleteRating(principal.getName(), requestBody.postId());
         }
         catch (InternalError e) {
             return ResponseEntity.internalServerError().body(

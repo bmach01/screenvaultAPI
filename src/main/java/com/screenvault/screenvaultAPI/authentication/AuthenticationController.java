@@ -4,6 +4,7 @@ import com.screenvault.screenvaultAPI.jwt.JwtType;
 import com.screenvault.screenvaultAPI.user.User;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +19,7 @@ public class AuthenticationController {
         this.authenticationService = authenticationService;
     }
 
-    @PostMapping("/register")
+    @PostMapping("/noAuth/register")
     public ResponseEntity<AuthenticationResponseBody> register(
             @RequestBody User request
     ) {
@@ -34,7 +35,7 @@ public class AuthenticationController {
         );
     }
 
-    @PostMapping("/login")
+    @PostMapping("/noAuth/login")
     public ResponseEntity<AuthenticationResponseBody> login(
             @RequestHeader("Authorization") String basicAuthorizationHeader,
             HttpServletResponse response
@@ -44,7 +45,9 @@ public class AuthenticationController {
             data = authenticationService.login(basicAuthorizationHeader);
         }
         catch (BadCredentialsException e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.valueOf(401)).body(
+                    new AuthenticationResponseBody(e.getMessage(), false)
+            );
         }
         catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new AuthenticationResponseBody(e.getMessage(), false));
@@ -56,7 +59,7 @@ public class AuthenticationController {
 
         Cookie refreshCookie = new Cookie(JwtType.REFRESH_TOKEN.name(), data.refreshToken());
         refreshCookie.setHttpOnly(true);
-        refreshCookie.setPath("/authentication/refreshToken");
+        refreshCookie.setPath("/authentication/noAuth/refreshToken");
 
         response.addCookie(tokenCookie);
         response.addCookie(refreshCookie);
@@ -64,7 +67,7 @@ public class AuthenticationController {
         return ResponseEntity.ok(new AuthenticationResponseBody("Successfully authenticated.", true));
     }
 
-    @GetMapping("/refreshToken")
+    @GetMapping("/noAuth/refreshToken")
     public ResponseEntity<AuthenticationResponseBody> refreshToken(
             // JwtType.REFRESH_TOKEN.name() <-- annotation can't use variable value
             @CookieValue("REFRESH_TOKEN") String refreshToken,

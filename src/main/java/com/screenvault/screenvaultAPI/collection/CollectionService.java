@@ -28,16 +28,15 @@ public class CollectionService {
         this.mongoTemplate = mongoTemplate;
     }
 
-    public List<Collection> getMyCollections(String token) {
-        String username = jwtService.extractUsername(token);
+    public List<Collection> getMyCollections(String username) {
         return collectionRepository.findAllByOwnerUsername(username).orElse(Collections.emptyList());
     }
 
-    public Collection addPostToMyCollection(String token, UUID postId, UUID collectionId)
+    public Collection addPostToMyCollection(String username, UUID postId, UUID collectionId)
             throws PermissionDeniedDataAccessException, InternalError, IllegalArgumentException, NoSuchElementException {
         Collection collection = collectionRepository.findById(collectionId).orElseThrow();
 
-        if (!collection.getOwnerUsername().equals(jwtService.extractUsername(token)))
+        if (!collection.getOwnerUsername().equals(username))
             throw new PermissionDeniedDataAccessException("Collection is not principal's.", null);
 
         if (!addPostToCollection(postId, collectionId))
@@ -46,11 +45,11 @@ public class CollectionService {
         return collection;
     }
 
-    public Collection uploadCollection(String token, Collection collection)
+    public Collection uploadCollection(String username, Collection collection)
             throws IllegalArgumentException, OptimisticLockingFailureException {
         Collection savedCollection = null;
         collection.setGlobal(false);
-        collection.setOwnerUsername(jwtService.extractUsername(token));
+        collection.setOwnerUsername(username);
 
         try {
             savedCollection = collectionRepository.save(collection);
@@ -69,4 +68,18 @@ public class CollectionService {
         return mongoTemplate.updateFirst(query, update, Collection.class).getModifiedCount() != 0;
     }
 
+    public void deleteCollection(String username, UUID collectionId) {
+        try {
+            Collection collection = collectionRepository.findById(collectionId).orElseThrow();
+            if (!collection.getOwnerUsername().equals(username))
+                throw new PermissionDeniedDataAccessException("Collection is not principal's.", null);
+
+            collectionRepository.deleteById(collection.getId());
+        }
+        catch (NullPointerException ignored) {
+        } // TODO: reconsider this
+        catch (OptimisticLockingFailureException e) {
+            throw new InternalError("Internal error. Try again later.");
+        }
+    }
 }

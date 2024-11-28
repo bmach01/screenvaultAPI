@@ -1,5 +1,6 @@
 package com.screenvault.screenvaultAPI.post;
 
+import com.screenvault.screenvaultAPI.comment.CommentRepository;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.dao.PermissionDeniedDataAccessException;
 import org.springframework.data.domain.Page;
@@ -20,13 +21,16 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final ImageRepository imageRepository;
+    private final CommentRepository commentRepository;
 
     public PostService(
             PostRepository postRepository,
-            ImageRepository imageRepository
+            ImageRepository imageRepository,
+            CommentRepository commentRepository
     ) {
         this.postRepository = postRepository;
         this.imageRepository = imageRepository;
+        this.commentRepository = commentRepository;
     }
 
     private boolean isValidImageType(String type) {
@@ -114,6 +118,7 @@ public class PostService {
             if (!post.getPosterUsername().equals(username))
                 throw new PermissionDeniedDataAccessException("Post is not principal's.", null);
 
+            commentRepository.deleteByIdIn(post.getComments());
             postRepository.deleteById(postId);
         }
         catch (OptimisticLockingFailureException e) {

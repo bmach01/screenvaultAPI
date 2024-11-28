@@ -22,4 +22,7 @@ public interface PostRepository extends PagingAndSortingRepository<Post, UUID>, 
     Optional<Page<Post>> findByCreatedAtBetweenOrderByPopularityDesc(Date startDate, Date endDate, Pageable pageable);
 
     Optional<Page<Post>> findByIsPublicAndTagsIn(boolean isPublic, Set<String> tags, Pageable pageable);
+
+    @Query("{ 'reports': { $gt: 0 } }")
+    Optional<Page<Post>> findByReportsGreaterThanZero(Pageable pageable);
 }

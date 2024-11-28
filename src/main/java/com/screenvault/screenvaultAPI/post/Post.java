@@ -21,12 +21,28 @@ public class Post {
     private Rating.Score myScore;
     private List<UUID> comments = Collections.emptyList(); // present only in Post details
     private boolean isPublic; // for faster search
-    private String privateImageUrl;
+    private boolean verified = false;
+    private int reportCount = 0;
 
     public Post() {
     }
 
-    public Post(UUID id, String title, String imageUrl, String posterUsername, int score, int commentCount, int viewCount, Date postedOn, Set<String> tags, Rating.Score myScore, List<UUID> comments, boolean isPublic, String privateImageUrl) {
+    public Post(
+            UUID id,
+            String title,
+            String imageUrl,
+            String posterUsername,
+            int score,
+            int commentCount,
+            int viewCount,
+            Date postedOn,
+            Set<String> tags,
+            Rating.Score myScore,
+            List<UUID> comments,
+            boolean isPublic,
+            boolean verified,
+            int reportCount
+    ) {
         this.id = id;
         this.title = title;
         this.imageUrl = imageUrl;
@@ -39,7 +55,8 @@ public class Post {
         this.myScore = myScore;
         this.comments = comments;
         this.isPublic = isPublic;
-        this.privateImageUrl = privateImageUrl;
+        this.verified = verified;
+        this.reportCount = reportCount;
     }
 
     public UUID getId() {
@@ -136,5 +153,21 @@ public class Post {
 
     public void setPublic(boolean aPublic) {
         isPublic = aPublic;
+    }
+
+    public boolean isVerified() {
+        return verified;
+    }
+
+    public void setVerified(boolean verified) {
+        this.verified = verified;
+    }
+
+    public int getReportCount() {
+        return reportCount;
+    }
+
+    public void setReportCount(int reportCount) {
+        this.reportCount = reportCount;
     }
 }

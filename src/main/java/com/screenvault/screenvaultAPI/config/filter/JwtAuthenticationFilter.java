@@ -36,8 +36,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
-            @NonNull FilterChain filterChain)
-            throws ServletException, IOException {
+            @NonNull FilterChain filterChain
+    )
+            throws ServletException, IOException
+    {
 
         if (request.getServletPath().startsWith("/authentication/")) {
             filterChain.doFilter(request, response);

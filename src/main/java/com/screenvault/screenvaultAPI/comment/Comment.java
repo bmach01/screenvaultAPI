@@ -13,15 +13,19 @@ public class Comment {
     private String username;
     private String text;
     private Date postedOn;
+    private boolean verified = false;
+    private int reportCount = 0;
 
     public Comment() {
     }
 
-    public Comment(UUID id, String username, String text, Date postedOn) {
+    public Comment(UUID id, String username, String text, Date postedOn, boolean verified, int reportCount) {
         this.id = id;
         this.username = username;
         this.text = text;
         this.postedOn = postedOn;
+        this.verified = verified;
+        this.reportCount = reportCount;
     }
 
     public UUID getId() {
@@ -54,5 +58,21 @@ public class Comment {
 
     public void setPostedOn(Date postedOn) {
         this.postedOn = postedOn;
+    }
+
+    public boolean isVerified() {
+        return verified;
+    }
+
+    public void setVerified(boolean verified) {
+        this.verified = verified;
+    }
+
+    public int getReportCount() {
+        return reportCount;
+    }
+
+    public void setReportCount(int reportCount) {
+        this.reportCount = reportCount;
     }
 }

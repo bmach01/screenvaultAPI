@@ -78,7 +78,9 @@ public class AuthenticationController {
             newToken = authenticationService.refreshToken(refreshToken);
         }
         catch (BadCredentialsException e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    new AuthenticationResponseBody("Invalid refresh token.", false)
+            );
         }
 
         Cookie tokenCookie = new Cookie(JwtType.ACCESS_TOKEN.name(), newToken);

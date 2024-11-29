@@ -9,10 +9,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Date;
-import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class PostService {
@@ -42,9 +39,6 @@ public class PostService {
         Page<Post> posts = postRepository.findAllByIsPublic(true, PageRequest.of(page, pageSize)).orElse(Page.empty());
         posts.getContent().forEach((it) -> {
             it.setImageUrl(getImageUrlForPost(it));
-            it.setComments(null);
-            it.setReportCount(null);
-            it.setTags(null);
         });
 
         return posts;
@@ -54,9 +48,6 @@ public class PostService {
         Page<Post> posts = postRepository.findByIsPublicAndTitleContaining(true, title, PageRequest.of(page, pageSize)).orElse(Page.empty());
         posts.getContent().forEach((it) -> {
             it.setImageUrl(getImageUrlForPost(it));
-            it.setComments(null);
-            it.setReportCount(null);
-            it.setTags(null);
         });
 
         return posts;
@@ -66,9 +57,6 @@ public class PostService {
         Page<Post> posts = postRepository.findByIsPublicAndTagsIn(true, tags, PageRequest.of(page, pageSize)).orElse(Page.empty());
         posts.getContent().forEach((it) -> {
             it.setImageUrl(getImageUrlForPost(it));
-            it.setComments(null);
-            it.setReportCount(null);
-            it.setTags(null);
         });
 
         return posts;
@@ -101,6 +89,9 @@ public class PostService {
         post.setPublic(isPublic);
         post.setPosterUsername(username);
         post.setPostedOn(new Date());
+        post.setComments(Collections.emptyList());
+        post.setTags(Collections.emptySet());
+        post.setReportCount(0);
 
         Post savedPost = null;
         try {

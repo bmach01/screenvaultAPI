@@ -17,12 +17,12 @@ public class Post {
     private int commentCount = 0;
     private int viewCount = 0;
     private Date postedOn;
-    private Set<String> tags = Collections.emptySet();
+    private Set<String> tags = null; // present only in Post details
     private Rating.Score myScore;
-    private List<UUID> comments = Collections.emptyList(); // present only in Post details
+    private List<UUID> comments = null; // present only in Post details
     private boolean isPublic; // for faster search
     private boolean verified = false;
-    private Integer reportCount = 0;
+    private Integer reportCount = null; // present only in admin cockpit;
 
     public Post() {
     }

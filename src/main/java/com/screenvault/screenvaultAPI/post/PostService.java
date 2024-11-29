@@ -42,6 +42,9 @@ public class PostService {
         Page<Post> posts = postRepository.findAllByIsPublic(true, PageRequest.of(page, pageSize)).orElse(Page.empty());
         posts.getContent().forEach((it) -> {
             it.setImageUrl(getImageUrlForPost(it));
+            it.setComments(null);
+            it.setReportCount(null);
+            it.setTags(null);
         });
 
         return posts;
@@ -51,6 +54,9 @@ public class PostService {
         Page<Post> posts = postRepository.findByIsPublicAndTitleContaining(true, title, PageRequest.of(page, pageSize)).orElse(Page.empty());
         posts.getContent().forEach((it) -> {
             it.setImageUrl(getImageUrlForPost(it));
+            it.setComments(null);
+            it.setReportCount(null);
+            it.setTags(null);
         });
 
         return posts;
@@ -60,6 +66,9 @@ public class PostService {
         Page<Post> posts = postRepository.findByIsPublicAndTagsIn(true, tags, PageRequest.of(page, pageSize)).orElse(Page.empty());
         posts.getContent().forEach((it) -> {
             it.setImageUrl(getImageUrlForPost(it));
+            it.setComments(null);
+            it.setReportCount(null);
+            it.setTags(null);
         });
 
         return posts;

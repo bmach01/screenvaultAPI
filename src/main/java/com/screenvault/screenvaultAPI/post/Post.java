@@ -22,7 +22,7 @@ public class Post {
     private List<UUID> comments = Collections.emptyList(); // present only in Post details
     private boolean isPublic; // for faster search
     private boolean verified = false;
-    private int reportCount = 0;
+    private Integer reportCount = 0;
 
     public Post() {
     }
@@ -41,7 +41,7 @@ public class Post {
             List<UUID> comments,
             boolean isPublic,
             boolean verified,
-            int reportCount
+            Integer reportCount
     ) {
         this.id = id;
         this.title = title;
@@ -163,11 +163,11 @@ public class Post {
         this.verified = verified;
     }
 
-    public int getReportCount() {
+    public Integer getReportCount() {
         return reportCount;
     }
 
-    public void setReportCount(int reportCount) {
+    public void setReportCount(Integer reportCount) {
         this.reportCount = reportCount;
     }
 }

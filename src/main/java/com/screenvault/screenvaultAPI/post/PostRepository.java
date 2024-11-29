@@ -12,8 +12,11 @@ import java.util.Set;
 import java.util.UUID;
 
 public interface PostRepository extends PagingAndSortingRepository<Post, UUID>, MongoRepository<Post, UUID> {
+    @Query(fields = "{ 'comments': 0, 'tags': 0 }")
     Optional<Page<Post>> findAllByIsPublic(boolean isPublic, Pageable pageable);
 
+    @Query(value = "{ 'isPublic': ?0, 'title': { $regex: ?1, $options: 'i' } }",
+            fields = "{ 'comments': 0, 'tags': 0 }")
     Optional<Page<Post>> findByIsPublicAndTitleContaining(boolean isPublic, String title, Pageable pageable);
 
     Optional<Page<Post>> findByIsPublicAndTagsContaining(boolean isPublic, Set<String> tags, Pageable pageable);

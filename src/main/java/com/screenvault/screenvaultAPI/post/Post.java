@@ -4,7 +4,10 @@ import com.screenvault.screenvaultAPI.rating.Rating;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 @Document("post")
 public class Post {

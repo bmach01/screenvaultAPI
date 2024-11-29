@@ -51,9 +51,9 @@ public class ImageRepository {
         }
     }
 
-    public void deleteImage(String name, boolean isPrivate) {
-        if (isPrivate) deleteImageFromBucket(PRIVATE_BUCKET, name);
-        else deleteImageFromBucket(PUBLIC_BUCKET, name);
+    public void deleteImage(String name, boolean isPublic) throws InternalError {
+        if (isPublic) deleteImageFromBucket(PUBLIC_BUCKET, name);
+        else deleteImageFromBucket(PRIVATE_BUCKET, name);
     }
 
     private void deleteImageFromBucket(String bucket, String name) throws InternalError {

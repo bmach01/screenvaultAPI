@@ -118,6 +118,8 @@ public class PostService {
             if (!post.getPosterUsername().equals(username))
                 throw new PermissionDeniedDataAccessException("Post is not principal's.", null);
 
+            imageRepository.deleteImage(post.getId().toString(), post.isPublic());
+
             commentRepository.deleteByIdIn(post.getComments());
             postRepository.deleteById(postId);
         }

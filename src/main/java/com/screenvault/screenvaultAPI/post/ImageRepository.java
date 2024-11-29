@@ -21,7 +21,7 @@ public class ImageRepository {
     public ImageRepository() {
     }
 
-    public String uploadPrivateImage(MultipartFile image, String name) throws InternalError {
+    public void uploadPrivateImage(MultipartFile image, String name) throws InternalError {
         try {
             minioClient.putObject(
                     PutObjectArgs.builder()
@@ -30,13 +30,6 @@ public class ImageRepository {
                             .contentType(image.getContentType())
                             .stream(image.getInputStream(), image.getSize(), -1)
                             .build());
-
-            return minioClient.getPresignedObjectUrl(
-                    GetPresignedObjectUrlArgs.builder()
-                            .bucket(PRIVATE_BUCKET)
-                            .object(name)
-                            .build()
-            );
         }
         catch (Exception e) {
             throw new InternalError("Internal error. Try again later.");

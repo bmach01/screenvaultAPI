@@ -4,6 +4,7 @@ import com.screenvault.screenvaultAPI.comment.Comment;
 import com.screenvault.screenvaultAPI.comment.CommentRepository;
 import com.screenvault.screenvaultAPI.post.Post;
 import com.screenvault.screenvaultAPI.post.PostRepository;
+import com.screenvault.screenvaultAPI.report.ReportRepository;
 import com.screenvault.screenvaultAPI.user.User;
 import com.screenvault.screenvaultAPI.user.UserRepository;
 import com.screenvault.screenvaultAPI.user.UserStatus;
@@ -22,15 +23,18 @@ public class AdminService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
+    private final ReportRepository reportRepository;
 
     public AdminService(
             UserRepository userRepository,
             PostRepository postRepository,
-            CommentRepository commentRepository
+            CommentRepository commentRepository,
+            ReportRepository reportRepository
     ) {
         this.userRepository = userRepository;
         this.postRepository = postRepository;
         this.commentRepository = commentRepository;
+        this.reportRepository = reportRepository;
     }
 
     public void banUser(String username) throws InternalError, IllegalArgumentException, NoSuchElementException {
@@ -77,35 +81,37 @@ public class AdminService {
         ).orElse(Page.empty());
     }
 
-    public Post verifyPost(UUID postId) throws IllegalArgumentException, NoSuchElementException, InternalError {
-        Post savedPost = null;
+    public void verifyPost(UUID postId)
+            throws InternalError, IllegalArgumentException, NoSuchElementException
+    {
         try {
-            Post post = postRepository.findById(postId).orElseThrow();
-            post.setVerified(true);
-            post.setReportCount(0);
-            savedPost = postRepository.save(post);
-        }
-        catch (OptimisticLockingFailureException e) {
-            throw new InternalError("Failed to save the post. Try again later.");
-        }
+            reportRepository.deleteByReportKeyReportedObjectId(postId);
 
-        return savedPost;
+            Post post = postRepository.findById(postId).orElseThrow();
+            post.setReportCount(0);
+            post.setVerified(true);
+            postRepository.save(post);
+        }
+        catch (NoSuchElementException ignore) {}
+        catch (OptimisticLockingFailureException e) {
+            throw new InternalError("Internal error. Try again later.");
+        }
     }
 
-    public Comment verifyComment(UUID commentId)
-            throws IllegalArgumentException, NoSuchElementException, InternalError
+    public void verifyComment(UUID commentId)
+            throws InternalError, IllegalArgumentException, NoSuchElementException
     {
-        Comment savedComment = null;
         try {
-            Comment comment = commentRepository.findById(commentId).orElseThrow();
-            comment.setVerified(true);
-            comment.setReportCount(0);
-            savedComment = commentRepository.save(comment);
-        }
-        catch (OptimisticLockingFailureException e) {
-            throw new InternalError("Failed to save the post. Try again later.");
-        }
+            reportRepository.deleteByReportKeyReportedObjectId(commentId);
 
-        return savedComment;
+            Comment comment = commentRepository.findById(commentId).orElseThrow();
+            comment.setReportCount(0);
+            comment.setVerified(true);
+            commentRepository.save(comment);
+        }
+        catch (NoSuchElementException ignore) {}
+        catch (OptimisticLockingFailureException e) {
+            throw new InternalError("Internal error. Try again later.");
+        }
     }
 }

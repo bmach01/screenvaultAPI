@@ -7,6 +7,8 @@ import com.screenvault.screenvaultAPI.user.UserRepository;
 import com.screenvault.screenvaultAPI.user.UserRole;
 import com.screenvault.screenvaultAPI.user.UserStatus;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -90,5 +92,18 @@ public class AuthenticationService {
             throw new BadCredentialsException("Refresh token may have expired.");
 
         return jwtService.generateToken(user);
+    }
+
+    public UserRole getMyRole(Authentication authentication) {
+        UserRole highestRole = UserRole.ANONYMOUS;
+
+        if (authentication == null) return highestRole;
+
+        for (GrantedAuthority authority : authentication.getAuthorities()) {
+            UserRole role = UserRole.valueOf(authority.getAuthority());
+            if (highestRole.grade > role.grade) highestRole = role;
+        }
+
+        return highestRole;
     }
 }

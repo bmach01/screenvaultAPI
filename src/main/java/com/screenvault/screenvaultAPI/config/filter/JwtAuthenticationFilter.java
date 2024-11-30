@@ -40,12 +40,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     )
             throws ServletException, IOException
     {
-
-        if (request.getServletPath().startsWith("/authentication/")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
         Cookie cookie = WebUtils.getCookie(request, JwtType.ACCESS_TOKEN.name());
         if (cookie == null) {
             filterChain.doFilter(request, response);

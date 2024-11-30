@@ -1,8 +1,10 @@
 package com.screenvault.screenvaultAPI.report;
 
 import com.screenvault.screenvaultAPI.comment.Comment;
+import com.screenvault.screenvaultAPI.comment.CommentAsyncService;
 import com.screenvault.screenvaultAPI.comment.CommentRepository;
 import com.screenvault.screenvaultAPI.post.Post;
+import com.screenvault.screenvaultAPI.post.PostAsyncService;
 import com.screenvault.screenvaultAPI.post.PostRepository;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
@@ -17,14 +19,21 @@ public class ReportService {
     private final ReportRepository reportRepository;
     private final CommentRepository commentRepository;
 
+    private final PostAsyncService postAsyncService;
+    private final CommentAsyncService commentAsyncService;
+
     public ReportService(
             PostRepository postRepository,
             ReportRepository reportRepository,
-            CommentRepository commentRepository
+            CommentRepository commentRepository,
+            PostAsyncService postAsyncService,
+            CommentAsyncService commentAsyncService
     ) {
         this.postRepository = postRepository;
         this.reportRepository = reportRepository;
         this.commentRepository = commentRepository;
+        this.postAsyncService = postAsyncService;
+        this.commentAsyncService = commentAsyncService;
     }
 
     public Report reportPost(String username, UUID postId)
@@ -40,8 +49,7 @@ public class ReportService {
             if (post.isVerified()) throw new IllegalArgumentException("Post has been already verified.");
 
             report = new Report(key);
-            post.setReportCount(post.getReportCount() + 1); // TODO: move to async
-            postRepository.save(post);
+            postAsyncService.incrementReportCountAndSave(post);
         }
         catch (OptimisticLockingFailureException e) {
             throw new InternalError("Internal error. Try again later.");
@@ -63,8 +71,7 @@ public class ReportService {
             if (comment.isVerified()) throw new IllegalArgumentException("Comment has been already verified.");
 
             report = new Report(key);
-            comment.setReportCount(comment.getReportCount() + 1); // TODO: move to async
-            commentRepository.save(comment);
+            commentAsyncService.incrementReportCountAndSave(comment);
         }
         catch (OptimisticLockingFailureException e) {
             throw new InternalError("Internal error. Try again later.");

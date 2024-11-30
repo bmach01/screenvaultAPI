@@ -74,7 +74,6 @@ public class PostController {
         Post post = null;
         try {
             post = postService.getPostById(requestBody.postId());
-            postService.incrementViewCountAndSave(post); // This has to be done outside the method class
         }
         catch (NoSuchElementException e) {
             return ResponseEntity.notFound().build();
@@ -166,7 +165,7 @@ public class PostController {
 
         Post updatedPost = null;
         try {
-            updatedPost = postService.changePostVisiblity(principal.getName(), requestBody.postId(), requestBody.toPublic());
+            updatedPost = postService.changePostVisibility(principal.getName(), requestBody.postId(), requestBody.toPublic());
 
         }
         catch (IllegalArgumentException e) {

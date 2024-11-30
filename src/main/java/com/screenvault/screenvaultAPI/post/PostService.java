@@ -5,7 +5,6 @@ import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.dao.PermissionDeniedDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,15 +18,18 @@ public class PostService {
     private final PostRepository postRepository;
     private final ImageRepository imageRepository;
     private final CommentRepository commentRepository;
+    private final PostAsyncService postAsyncService;
 
     public PostService(
             PostRepository postRepository,
             ImageRepository imageRepository,
-            CommentRepository commentRepository
+            CommentRepository commentRepository,
+            PostAsyncService postAsyncService
     ) {
         this.postRepository = postRepository;
         this.imageRepository = imageRepository;
         this.commentRepository = commentRepository;
+        this.postAsyncService = postAsyncService;
     }
 
     private boolean isValidImageType(String type) {
@@ -62,18 +64,10 @@ public class PostService {
         return posts;
     }
 
-    @Async
-    public void incrementViewCountAndSave(Post post) {
-        post.setViewCount(post.getViewCount() + 1);
-        try {
-            postRepository.save(post);
-        }
-        catch (Exception ignore) {}
-    }
-
     public Post getPostById(UUID postId) throws NoSuchElementException {
         Post post = postRepository.findById(postId).orElseThrow();
         post.setImageUrl(getImageUrlForPost(post));
+        postAsyncService.incrementViewCountAndSave(post);
 
         return post;
     }
@@ -129,7 +123,7 @@ public class PostService {
 
     }
 
-    public Post changePostVisiblity(String username, UUID postId, boolean toPublic)
+    public Post changePostVisibility(String username, UUID postId, boolean toPublic)
             throws IllegalArgumentException, PermissionDeniedDataAccessException, InternalError, NoSuchElementException
     {
         Post post = null;

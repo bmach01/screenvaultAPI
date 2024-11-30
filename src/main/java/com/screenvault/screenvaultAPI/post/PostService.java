@@ -14,7 +14,7 @@ import java.util.*;
 @Service
 public class PostService {
 
-    private static final String[] VALID_IMAGE_TYPES = {"image/jpeg", "image/png"};
+    private static final String[] VALID_IMAGE_TYPES = { "image/jpeg", "image/png", "image/svg+xml", "image/webp" };
 
     private final PostRepository postRepository;
     private final ImageRepository imageRepository;

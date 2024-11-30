@@ -5,10 +5,12 @@ import com.screenvault.screenvaultAPI.comment.CommentRepository;
 import com.screenvault.screenvaultAPI.post.Post;
 import com.screenvault.screenvaultAPI.post.PostRepository;
 import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.stereotype.Service;
 
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
+@Service
 public class ReportService {
 
     private final PostRepository postRepository;

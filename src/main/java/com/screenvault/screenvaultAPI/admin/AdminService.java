@@ -81,13 +81,14 @@ public class AdminService {
         ).orElse(Page.empty());
     }
 
-    public void verifyPost(UUID postId)
+    public Post verifyPost(UUID postId)
             throws InternalError, IllegalArgumentException, NoSuchElementException
     {
+        Post post = null;
         try {
             reportRepository.deleteByReportKeyReportedObjectId(postId);
 
-            Post post = postRepository.findById(postId).orElseThrow();
+            post = postRepository.findById(postId).orElseThrow();
             post.setReportCount(0);
             post.setVerified(true);
             postRepository.save(post);
@@ -96,15 +97,18 @@ public class AdminService {
         catch (OptimisticLockingFailureException e) {
             throw new InternalError("Internal error. Try again later.");
         }
+
+        return post;
     }
 
-    public void verifyComment(UUID commentId)
+    public Comment verifyComment(UUID commentId)
             throws InternalError, IllegalArgumentException, NoSuchElementException
     {
+        Comment comment = null;
         try {
             reportRepository.deleteByReportKeyReportedObjectId(commentId);
 
-            Comment comment = commentRepository.findById(commentId).orElseThrow();
+            comment = commentRepository.findById(commentId).orElseThrow();
             comment.setReportCount(0);
             comment.setVerified(true);
             commentRepository.save(comment);
@@ -113,5 +117,7 @@ public class AdminService {
         catch (OptimisticLockingFailureException e) {
             throw new InternalError("Internal error. Try again later.");
         }
+
+        return comment;
     }
 }

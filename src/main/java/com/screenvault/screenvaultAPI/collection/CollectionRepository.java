@@ -8,6 +8,4 @@ import java.util.UUID;
 
 public interface CollectionRepository extends MongoRepository<Collection, UUID> {
     Optional<List<Collection>> findAllByOwnerUsername(String ownerUsername);
-
-    Optional<Collection> findByIsGlobal(boolean isGlobal);
 }

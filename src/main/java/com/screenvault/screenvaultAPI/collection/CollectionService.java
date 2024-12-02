@@ -1,6 +1,5 @@
 package com.screenvault.screenvaultAPI.collection;
 
-import com.screenvault.screenvaultAPI.jwt.JwtService;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.dao.PermissionDeniedDataAccessException;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -18,13 +17,11 @@ import java.util.UUID;
 public class CollectionService {
 
     private final CollectionRepository collectionRepository;
-    private final JwtService jwtService;
     private final MongoTemplate mongoTemplate;
 
 
-    public CollectionService(CollectionRepository collectionRepository, JwtService jwtService, MongoTemplate mongoTemplate) {
+    public CollectionService(CollectionRepository collectionRepository, MongoTemplate mongoTemplate) {
         this.collectionRepository = collectionRepository;
-        this.jwtService = jwtService;
         this.mongoTemplate = mongoTemplate;
     }
 
@@ -33,7 +30,8 @@ public class CollectionService {
     }
 
     public Collection addPostToMyCollection(String username, UUID postId, UUID collectionId)
-            throws PermissionDeniedDataAccessException, InternalError, IllegalArgumentException, NoSuchElementException {
+            throws PermissionDeniedDataAccessException, InternalError, IllegalArgumentException, NoSuchElementException
+    {
         Collection collection = collectionRepository.findById(collectionId).orElseThrow();
 
         if (!collection.getOwnerUsername().equals(username))
@@ -45,16 +43,28 @@ public class CollectionService {
         return collection;
     }
 
+    public Collection removePostFromMyCollection(String username, UUID postId, UUID collectionId)
+            throws PermissionDeniedDataAccessException, InternalError, IllegalArgumentException, NoSuchElementException
+    {
+        Collection collection = collectionRepository.findById(collectionId).orElseThrow();
+
+        if (!collection.getOwnerUsername().equals(username))
+            throw new PermissionDeniedDataAccessException("Collection is not principal's.", null);
+
+        if (!removePostFromCollection(postId, collectionId))
+            throw new InternalError("Failed to update the collection. Try again later");
+
+        return collection;
+    }
+
     public Collection uploadCollection(String username, Collection collection)
             throws IllegalArgumentException, OptimisticLockingFailureException
     {
         Collection savedCollection = null;
-        collection.setGlobal(false);
         collection.setOwnerUsername(username);
 
         try {
             savedCollection = collectionRepository.save(collection);
-
         }
         catch (OptimisticLockingFailureException e) {
             throw new InternalError("Internal error. Try again later.");
@@ -63,9 +73,15 @@ public class CollectionService {
         return savedCollection;
     }
 
-    public boolean addPostToCollection(UUID postId, UUID collectionId) {
+    private boolean addPostToCollection(UUID postId, UUID collectionId) {
         Query query = new Query(Criteria.where("id").is(collectionId));
         Update update = new Update().addToSet("posts", postId);
+        return mongoTemplate.updateFirst(query, update, Collection.class).getModifiedCount() != 0;
+    }
+
+    private boolean removePostFromCollection(UUID postId, UUID collectionId) {
+        Query query = new Query(Criteria.where("id").is(collectionId));
+        Update update = new Update().pull("posts", postId);
         return mongoTemplate.updateFirst(query, update, Collection.class).getModifiedCount() != 0;
     }
 

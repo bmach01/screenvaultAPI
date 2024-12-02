@@ -76,6 +76,43 @@ public class CollectionController {
         ));
     }
 
+    @PatchMapping("/removePostFromMyCollection")
+    public ResponseEntity<CollectionResponseBody> removePostFromMyCollection(
+            @RequestBody AddPostToCollectionRequestBody requestBody,
+            Principal principal
+    ) {
+        if (principal == null)
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    new CollectionResponseBody("Sign in to manage collections.", false, null)
+            );
+
+        Collection collection = null;
+        try {
+            collection = collectionService.removePostFromMyCollection(principal.getName(), requestBody.postId(), requestBody.collectionId());
+        }
+        catch (IllegalArgumentException | NoSuchElementException e) {
+            return ResponseEntity.badRequest().body(
+                    new CollectionResponseBody(e.getMessage(), false, null)
+            );
+        }
+        catch (PermissionDeniedDataAccessException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    new CollectionResponseBody(e.getMessage(), false, null)
+            );
+        }
+        catch (InternalError e) {
+            return ResponseEntity.internalServerError().body(
+                    new CollectionResponseBody(e.getMessage(), false, null)
+            );
+        }
+
+        return ResponseEntity.ok(new CollectionResponseBody(
+                "Successfully removed post from the collection.",
+                true,
+                collection
+        ));
+    }
+
     @PostMapping("/postCollection")
     public ResponseEntity<CollectionResponseBody> createNewCollection(
             @RequestBody PostCollectionRequestBody requestBody,

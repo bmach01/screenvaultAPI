@@ -13,18 +13,15 @@ public class Collection {
     private UUID id = UUID.randomUUID();
     private String ownerUsername;
     private String name;
-    private boolean isPrivate;
     private List<UUID> posts = Collections.emptyList(); // present only in Collection details
-    private boolean isGlobal = false;
 
     public Collection() {
     }
 
-    public Collection(UUID id, String ownerUsername, String name, boolean isPrivate, List<UUID> posts) {
+    public Collection(UUID id, String ownerUsername, String name, List<UUID> posts) {
         this.id = id;
         this.ownerUsername = ownerUsername;
         this.name = name;
-        this.isPrivate = isPrivate;
         this.posts = posts;
     }
 
@@ -52,27 +49,11 @@ public class Collection {
         this.name = name;
     }
 
-    public boolean isPrivate() {
-        return isPrivate;
-    }
-
-    public void setPrivate(boolean aPrivate) {
-        isPrivate = aPrivate;
-    }
-
     public List<UUID> getPosts() {
         return posts;
     }
 
     public void setPosts(List<UUID> posts) {
         this.posts = posts;
-    }
-
-    public boolean isGlobal() {
-        return isGlobal;
-    }
-
-    public void setGlobal(boolean global) {
-        isGlobal = global;
     }
 }

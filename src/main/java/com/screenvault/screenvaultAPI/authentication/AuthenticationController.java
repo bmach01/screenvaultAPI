@@ -7,7 +7,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -96,13 +95,14 @@ public class AuthenticationController {
 
     @GetMapping("/noAuth/whoAmI")
     public ResponseEntity<IdentityResponseBody> confirmIdentity(
-            Authentication authentication
+            // JwtType.ACCESS_TOKEN.name() <-- annotation can't use variable value
+            @CookieValue(name = "ACCESS_TOKEN", defaultValue = "") String token
     ) {
         return ResponseEntity.ok(
                 new IdentityResponseBody(
                         "Successfully confirmed identity.",
                         true,
-                        authenticationService.getMyRole(authentication)
+                        authenticationService.getMyUser(token)
                 )
         );
     }

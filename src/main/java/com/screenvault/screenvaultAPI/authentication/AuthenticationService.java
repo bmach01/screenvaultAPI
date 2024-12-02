@@ -7,12 +7,11 @@ import com.screenvault.screenvaultAPI.user.UserRepository;
 import com.screenvault.screenvaultAPI.user.UserRole;
 import com.screenvault.screenvaultAPI.user.UserStatus;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Base64;
+import java.util.NoSuchElementException;
 
 @Service
 public class AuthenticationService {
@@ -94,16 +93,18 @@ public class AuthenticationService {
         return jwtService.generateToken(user);
     }
 
-    public UserRole getMyRole(Authentication authentication) {
-        UserRole highestRole = UserRole.ANONYMOUS;
-
-        if (authentication == null) return highestRole;
-
-        for (GrantedAuthority authority : authentication.getAuthorities()) {
-            UserRole role = UserRole.valueOf(authority.getAuthority());
-            if (highestRole.grade > role.grade) highestRole = role;
+    public User getMyUser(String token) {
+        User user = null;
+        try {
+            if (token.isBlank()) throw new NoSuchElementException("Token is null.");
+            user = userRepository.findByUsername(jwtService.extractUsername(token)).orElseThrow();
+            user.setPassword(null);
+            user.setStatus(null);
+        }
+        catch (NoSuchElementException e) {
+            user = new User("anonymous", null, null, UserRole.ANONYMOUS, null);
         }
 
-        return highestRole;
+        return user;
     }
 }

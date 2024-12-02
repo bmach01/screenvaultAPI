@@ -23,7 +23,6 @@ import java.io.IOException;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final static String BEARER_PREFIX = "Bearer ";
     private final JwtService jwtService;
     private final UserDetailsServiceImpl userDetailsService;
 
@@ -40,6 +39,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     )
             throws ServletException, IOException
     {
+        String path = request.getServletPath();
+        if (path.contains("/noAuth/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         Cookie cookie = WebUtils.getCookie(request, JwtType.ACCESS_TOKEN.name());
         if (cookie == null) {
             filterChain.doFilter(request, response);

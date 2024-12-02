@@ -13,7 +13,9 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    private final String jwtTypeClaim = "TYPE";
+    private static final String jwtTypeClaim = "TYPE";
+    private static final int ACCESS_TOKEN_EXP_TIME = 5 * 60 * 1000;
+    private static final int REFRESH_TOKEN_EXP_TIME = 7 * 24 * 60 * 60 * 1000;
 
     private String getSecretKey() {
         return System.getenv("SCREENVAULT_JWT_SECRET_KEY");
@@ -23,7 +25,7 @@ public class JwtService {
         return Jwts.builder()
                 .subject(user.getUsername())
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 5 * 60 * 1000))
+                .expiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXP_TIME))
                 .signWith(getSigningKey())
                 .claim(jwtTypeClaim, JwtType.ACCESS_TOKEN)
                 .compact();
@@ -33,7 +35,7 @@ public class JwtService {
         return Jwts.builder()
                 .subject(user.getUsername())
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000))
+                .expiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXP_TIME))
                 .signWith(getSigningKey())
                 .claim(jwtTypeClaim, JwtType.REFRESH_TOKEN)
                 .compact();
@@ -66,6 +68,10 @@ public class JwtService {
 
     public String extractUsername(String token) {
         return extractAllClaims(token).getSubject();
+    }
+
+    public Date extractExpiration(String token) {
+        return extractAllClaims(token).getExpiration();
     }
 
     private boolean isNotExpired(Date expirationDate) {

@@ -30,7 +30,7 @@ public class CollectionService {
     }
 
     public Collection addPostToMyCollection(String username, UUID postId, UUID collectionId)
-            throws PermissionDeniedDataAccessException, InternalError, IllegalArgumentException, NoSuchElementException
+            throws PermissionDeniedDataAccessException, IllegalArgumentException, NoSuchElementException
     {
         Collection collection = collectionRepository.findById(collectionId).orElseThrow();
 
@@ -38,13 +38,13 @@ public class CollectionService {
             throw new PermissionDeniedDataAccessException("Collection is not principal's.", null);
 
         if (!addPostToCollection(postId, collectionId))
-            throw new InternalError("Failed to update the collection. Try again later");
+            throw new NoSuchElementException("Failed to update the collection. Isn't this post already in the collection?");
 
         return collection;
     }
 
     public Collection removePostFromMyCollection(String username, UUID postId, UUID collectionId)
-            throws PermissionDeniedDataAccessException, InternalError, IllegalArgumentException, NoSuchElementException
+            throws PermissionDeniedDataAccessException, IllegalArgumentException, NoSuchElementException
     {
         Collection collection = collectionRepository.findById(collectionId).orElseThrow();
 
@@ -52,9 +52,21 @@ public class CollectionService {
             throw new PermissionDeniedDataAccessException("Collection is not principal's.", null);
 
         if (!removePostFromCollection(postId, collectionId))
-            throw new InternalError("Failed to update the collection. Try again later");
+            throw new NoSuchElementException("Failed to update the collection. Was this post really in the collection?");
 
         return collection;
+    }
+
+    private boolean addPostToCollection(UUID postId, UUID collectionId) {
+        Query query = new Query(Criteria.where("id").is(collectionId));
+        Update update = new Update().addToSet("posts", postId);
+        return mongoTemplate.updateFirst(query, update, Collection.class).getModifiedCount() != 0;
+    }
+
+    private boolean removePostFromCollection(UUID postId, UUID collectionId) {
+        Query query = new Query(Criteria.where("id").is(collectionId));
+        Update update = new Update().pull("posts", postId);
+        return mongoTemplate.updateFirst(query, update, Collection.class).getModifiedCount() != 0;
     }
 
     public Collection uploadCollection(String username, Collection collection)
@@ -71,18 +83,6 @@ public class CollectionService {
         }
 
         return savedCollection;
-    }
-
-    private boolean addPostToCollection(UUID postId, UUID collectionId) {
-        Query query = new Query(Criteria.where("id").is(collectionId));
-        Update update = new Update().addToSet("posts", postId);
-        return mongoTemplate.updateFirst(query, update, Collection.class).getModifiedCount() != 0;
-    }
-
-    private boolean removePostFromCollection(UUID postId, UUID collectionId) {
-        Query query = new Query(Criteria.where("id").is(collectionId));
-        Update update = new Update().pull("posts", postId);
-        return mongoTemplate.updateFirst(query, update, Collection.class).getModifiedCount() != 0;
     }
 
     public void deleteCollection(String username, UUID collectionId)

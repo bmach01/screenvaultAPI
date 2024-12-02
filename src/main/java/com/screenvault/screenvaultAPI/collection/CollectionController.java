@@ -19,13 +19,25 @@ public class CollectionController {
     }
 
     @GetMapping("/getMyCollections")
-    public ResponseEntity<List<Collection>> getCollectionsByUserId(
+    public ResponseEntity<GetCollectionsResponseBody> getCollectionsByUserId(
             Principal principal
     ) {
         if (principal == null)
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    new GetCollectionsResponseBody(
+                            "Only signed in users can have and fetch collections.",
+                            false,
+                            null
+                    )
+            );
 
-        return ResponseEntity.ok(collectionService.getMyCollections(principal.getName()));
+        return ResponseEntity.ok(
+                new GetCollectionsResponseBody(
+                        "Successfully fetched my collections.",
+                        true,
+                        collectionService.getMyCollections(principal.getName())
+                )
+        );
     }
 
     @PatchMapping("/addPostToMyCollection")

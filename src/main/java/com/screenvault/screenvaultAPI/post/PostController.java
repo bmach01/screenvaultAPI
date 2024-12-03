@@ -1,5 +1,6 @@
 package com.screenvault.screenvaultAPI.post;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.screenvault.screenvaultAPI.rating.RatingService;
 import org.springframework.dao.PermissionDeniedDataAccessException;
@@ -18,10 +19,14 @@ public class PostController {
 
     private final PostService postService;
     private final RatingService ratingService;
+    private final ObjectMapper objectMapper;
 
-    public PostController(PostService postService, RatingService ratingService) {
+    public PostController(PostService postService, RatingService ratingService, ObjectMapper objectMapper) {
         this.postService = postService;
         this.ratingService = ratingService;
+        this.objectMapper = objectMapper;
+
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     @GetMapping("/noAuth/getLandingPagePosts")
@@ -91,11 +96,12 @@ public class PostController {
             @RequestParam MultipartFile image,
             Principal principal
     ) {
-        UploadPostRequestParam postRequestDTO = null;
+        Post post = null;
         try {
-            postRequestDTO = new ObjectMapper().readValue(postRequest, UploadPostRequestParam.class);
+            post = objectMapper.readValue(postRequest, Post.class);
         }
         catch (Exception e) {
+            System.out.println(e.getMessage());
             return ResponseEntity.badRequest()
                     .body(new PostResponseBody("Failed to deserialize the request.", false, null));
         }
@@ -103,7 +109,7 @@ public class PostController {
         Post savedPost = null;
         String username = principal == null ? "Anonymous" : principal.getName();
         try {
-            savedPost = postService.uploadPost(username, postRequestDTO.post(), postRequestDTO.isPublic(), image);
+            savedPost = postService.uploadPost(username, post, image);
         }
         catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()

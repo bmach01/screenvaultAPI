@@ -72,7 +72,7 @@ public class PostService {
         return post;
     }
 
-    public Post uploadPost(String username, Post post, boolean isPublic, MultipartFile image)
+    public Post uploadPost(String username, Post post, MultipartFile image)
             throws InternalError, IllegalArgumentException
     {
         if (image == null) throw new IllegalArgumentException("Image must not be null.");
@@ -80,7 +80,6 @@ public class PostService {
         if (!isValidImageType(image.getContentType()))
             throw new IllegalArgumentException("Image type not supported.");
 
-        post.setPublic(isPublic);
         post.setPosterUsername(username);
         post.setPostedOn(new Date());
         post.setComments(Collections.emptyList());
@@ -89,7 +88,7 @@ public class PostService {
 
         Post savedPost = null;
         try {
-            if (isPublic)
+            if (post.isPublic())
                 imageRepository.uploadPublicImage(image, post.getId().toString());
             else
                 imageRepository.uploadPrivateImage(image, post.getId().toString());

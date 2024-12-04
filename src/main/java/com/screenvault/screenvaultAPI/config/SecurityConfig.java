@@ -4,6 +4,7 @@ import com.screenvault.screenvaultAPI.config.filter.JwtAuthenticationFilter;
 import com.screenvault.screenvaultAPI.user.UserDetailsServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -41,6 +42,7 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable) // TODO: to be decided
                 .authorizeHttpRequests(request -> {
+                          //  request.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll(); // Allow preflight requests
                             CONTROLLERS.forEach(controller -> request.requestMatchers(
                                     "/" + controller + "/noAuth/**"
                             ).permitAll());
@@ -68,12 +70,14 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfig = new CorsConfiguration();
         corsConfig.setAllowedOrigins(Arrays.asList("http://localhost:4200")); // Your front-end origin
-        corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"));
         corsConfig.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
         corsConfig.setAllowCredentials(true); // Allow cookies or Authorization header
-
+       // corsConfig.addExposedHeader("Set-Cookie");
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfig); // Apply CORS settings globally
+
+
         return source;
     }
 }

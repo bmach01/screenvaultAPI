@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.nio.file.AccessDeniedException;
 import java.security.Principal;
 import java.util.NoSuchElementException;
 
@@ -26,7 +27,7 @@ public class UserController {
             Principal principal
     ) {
         try {
-            userService.changePassword(principal.getName(), requestBody.newPassword());
+            userService.changePassword(principal.getName(), requestBody.oldPassword(), requestBody.newPassword());
         }
         catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(
@@ -35,6 +36,11 @@ public class UserController {
         }
         catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    new UserResponseBody(e.getMessage(), false)
+            );
+        }
+        catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                     new UserResponseBody(e.getMessage(), false)
             );
         }

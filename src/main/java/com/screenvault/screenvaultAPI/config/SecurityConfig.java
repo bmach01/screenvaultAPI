@@ -4,7 +4,6 @@ import com.screenvault.screenvaultAPI.config.filter.JwtAuthenticationFilter;
 import com.screenvault.screenvaultAPI.user.UserDetailsServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;

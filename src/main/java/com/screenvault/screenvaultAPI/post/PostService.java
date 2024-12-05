@@ -17,18 +17,18 @@ public class PostService {
     private static final String[] VALID_IMAGE_TYPES = { "image/jpeg", "image/png", "image/svg+xml", "image/webp" };
 
     private final PostRepository postRepository;
-    private final ImageRepository imageRepository;
+    private final ImageService imageService;
     private final CommentRepository commentRepository;
     private final PostAsyncService postAsyncService;
 
     public PostService(
             PostRepository postRepository,
-            ImageRepository imageRepository,
+            ImageService imageService,
             CommentRepository commentRepository,
             PostAsyncService postAsyncService
     ) {
         this.postRepository = postRepository;
-        this.imageRepository = imageRepository;
+        this.imageService = imageService;
         this.commentRepository = commentRepository;
         this.postAsyncService = postAsyncService;
     }
@@ -99,9 +99,9 @@ public class PostService {
         Post savedPost = null;
         try {
             if (post.isPublic())
-                imageRepository.uploadPublicImage(image, post.getId().toString());
+                imageService.uploadPublicImage(image, post.getId().toString());
             else
-                imageRepository.uploadPrivateImage(image, post.getId().toString());
+                imageService.uploadPrivateImage(image, post.getId().toString());
 
             savedPost = postRepository.save(post);
         }
@@ -121,7 +121,7 @@ public class PostService {
             if (!post.getPosterUsername().equals(username))
                 throw new PermissionDeniedDataAccessException("Post is not principal's.", null);
 
-            imageRepository.deleteImage(post.getId().toString(), post.isPublic());
+            imageService.deleteImage(post.getId().toString(), post.isPublic());
 
             commentRepository.deleteByIdIn(post.getComments());
             postRepository.deleteById(postId);
@@ -143,8 +143,8 @@ public class PostService {
             if (!post.getPosterUsername().equals(username))
                 throw new PermissionDeniedDataAccessException("Post is not principal's.", null);
 
-            if (toPublic) imageRepository.moveImageToPublic(post.getId().toString());
-            else imageRepository.moveImageToPrivate(post.getId().toString());
+            if (toPublic) imageService.moveImageToPublic(post.getId().toString());
+            else imageService.moveImageToPrivate(post.getId().toString());
 
             post.setPublic(toPublic);
             postRepository.save(post);
@@ -158,7 +158,7 @@ public class PostService {
     }
 
     private String getImageUrlForPost(Post post) throws InternalError {
-        if (post.isPublic()) return imageRepository.getPublicImageUrl(post.getId().toString());
-        return imageRepository.getPrivateImageUrl(post.getId().toString());
+        if (post.isPublic()) return imageService.getPublicImageUrl(post.getId().toString());
+        return imageService.getPrivateImageUrl(post.getId().toString());
     }
 }

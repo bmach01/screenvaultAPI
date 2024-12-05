@@ -92,16 +92,18 @@ public class AdminController {
 
     @GetMapping("/getReportedPosts")
     public ResponseEntity<Page<Post>> getReportedPosts(
-            @RequestBody GetObjectsRequestBody requestBody
+            @RequestParam int page,
+            @RequestParam int pageSize
     ) {
-        return ResponseEntity.ok(adminService.getPageOfReportedPosts(requestBody.page(), requestBody.pageSize()));
+        return ResponseEntity.ok(adminService.getPageOfReportedPosts(page, pageSize));
     }
 
     @GetMapping("/getReportedComments")
     public ResponseEntity<Page<Comment>> getReportedComments(
-            @RequestBody GetObjectsRequestBody requestBody
+            @RequestParam int page,
+            @RequestParam int pageSize
     ) {
-        return ResponseEntity.ok(adminService.getPageOfReportedComments(requestBody.page(), requestBody.pageSize()));
+        return ResponseEntity.ok(adminService.getPageOfReportedComments(page, pageSize));
     }
 
     @PatchMapping("/verifyPost")

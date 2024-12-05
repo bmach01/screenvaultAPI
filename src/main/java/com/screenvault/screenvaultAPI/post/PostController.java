@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -40,10 +41,11 @@ public class PostController {
 
     @GetMapping("/noAuth/getLandingPagePosts")
     public ResponseEntity<Page<Post>> getLandingPagePosts(
-            @RequestBody GetPostsRequestBody requestBody,
+            @RequestParam int page,
+            @RequestParam int pageSize,
             Principal principal
     ) {
-        Page<Post> posts = postService.getLandingPagePostsPage(requestBody.page(), requestBody.pageSize());
+        Page<Post> posts = postService.getLandingPagePostsPage(page, pageSize);
 
         if (principal != null) {
             ratingService.addUserRatingToPosts(principal.getName(), posts);
@@ -54,10 +56,12 @@ public class PostController {
 
     @GetMapping("/noAuth/getPostsByTitles")
     public ResponseEntity<Page<Post>> getPostsByTitles(
-            @RequestBody GetPostsRequestBody requestBody,
+            @RequestParam int page,
+            @RequestParam int pageSize,
+            @RequestParam String title,
             Principal principal
     ) {
-        Page<Post> posts = postService.getPostsByTitle(requestBody.title(), requestBody.page(), requestBody.pageSize());
+        Page<Post> posts = postService.getPostsByTitle(title, page, pageSize);
 
         if (principal != null) {
             ratingService.addUserRatingToPosts(principal.getName(), posts);
@@ -68,10 +72,12 @@ public class PostController {
 
     @GetMapping("/noAuth/getPostsByTags")
     public ResponseEntity<Page<Post>> getPostsByTags(
-            @RequestBody GetPostsRequestBody requestBody,
+            @RequestParam int page,
+            @RequestParam int pageSize,
+            @RequestParam Set<String> tags,
             Principal principal
     ) {
-        Page<Post> posts = postService.getPostsByTags(requestBody.tags(), requestBody.page(), requestBody.pageSize());
+        Page<Post> posts = postService.getPostsByTags(tags, page, pageSize);
 
         if (principal != null) {
             ratingService.addUserRatingToPosts(principal.getName(), posts);
@@ -82,12 +88,12 @@ public class PostController {
 
     @GetMapping("/noAuth/getPostById")
     public ResponseEntity<Post> getPostById(
-            @RequestBody GetPostsRequestBody requestBody,
+            @RequestParam UUID postId,
             Principal principal
     ) {
         Post post = null;
         try {
-            post = postService.getPostById(requestBody.postId());
+            post = postService.getPostById(postId);
         }
         catch (NoSuchElementException e) {
             return ResponseEntity.notFound().build();
@@ -101,9 +107,9 @@ public class PostController {
 
     @GetMapping("/getPostsByCollectionId")
     public ResponseEntity<Page<Post>> getPostsFromCollection(
-            @RequestParam UUID collectionId,
             @RequestParam int page,
             @RequestParam int pageSize,
+            @RequestParam UUID collectionId,
             Principal principal
     ) {
         try {

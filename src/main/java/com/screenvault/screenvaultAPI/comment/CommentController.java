@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.NoSuchElementException;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/comment")
@@ -21,13 +22,11 @@ public class CommentController {
 
     @GetMapping("/noAuth/getCommentsUnderPost")
     public ResponseEntity<Page<Comment>> getCommentsUnderPost(
-            @RequestBody GetCommentsRequestBody requestBody
+            @RequestParam UUID postId,
+            @RequestParam int page,
+            @RequestParam int pageSize
     ) {
-        Page<Comment> comments = commentService.getCommentsByPostId(
-                requestBody.postId(),
-                requestBody.page(),
-                requestBody.pageSize()
-        );
+        Page<Comment> comments = commentService.getCommentsByPostId(postId, page, pageSize);
         return ResponseEntity.ok(comments);
     }
 

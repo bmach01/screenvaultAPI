@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.web.multipart.MultipartFile;
 
 @Repository
-public class ImageRepository {
+public class ImageService {
     private static final String PUBLIC_BUCKET = "public";
     private static final String PRIVATE_BUCKET = "private";
     private static final String SERVER_URL = System.getenv("SCREENVAULT_MINIO_URL");
@@ -18,7 +18,7 @@ public class ImageRepository {
             .credentials(ACCESS_KEY, SECRET_KEY)
             .build();
 
-    public ImageRepository() {
+    public ImageService() {
     }
 
     public void uploadPrivateImage(MultipartFile image, String name) throws InternalError {

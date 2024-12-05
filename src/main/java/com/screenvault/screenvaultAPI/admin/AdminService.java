@@ -48,6 +48,17 @@ public class AdminService {
         }
     }
 
+    public void unbanUser(String username) {
+        try {
+            User user = userRepository.findByUsername(username).orElseThrow();
+            user.setStatus(UserStatus.INACTIVE);
+            userRepository.save(user);
+        }
+        catch (OptimisticLockingFailureException e) {
+            throw new InternalError("Internal error. Try again later.");
+        }
+    }
+
     public void deletePost(UUID postId) throws IllegalArgumentException, NoSuchElementException {
         Post post = postRepository.findById(postId).orElseThrow();
         commentRepository.deleteByIdIn(post.getComments());
@@ -93,7 +104,6 @@ public class AdminService {
             post.setVerified(true);
             postRepository.save(post);
         }
-        catch (NoSuchElementException ignore) {}
         catch (OptimisticLockingFailureException e) {
             throw new InternalError("Internal error. Try again later.");
         }
@@ -113,7 +123,6 @@ public class AdminService {
             comment.setVerified(true);
             commentRepository.save(comment);
         }
-        catch (NoSuchElementException ignore) {}
         catch (OptimisticLockingFailureException e) {
             throw new InternalError("Internal error. Try again later.");
         }

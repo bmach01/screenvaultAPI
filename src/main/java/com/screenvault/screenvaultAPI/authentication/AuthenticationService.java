@@ -2,10 +2,14 @@ package com.screenvault.screenvaultAPI.authentication;
 
 
 import com.screenvault.screenvaultAPI.jwt.JwtService;
+import com.screenvault.screenvaultAPI.jwt.JwtType;
 import com.screenvault.screenvaultAPI.user.User;
 import com.screenvault.screenvaultAPI.user.UserRepository;
 import com.screenvault.screenvaultAPI.user.UserRole;
 import com.screenvault.screenvaultAPI.user.UserStatus;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -53,7 +57,7 @@ public class AuthenticationService {
                 request.getLogin(),
                 passwordEncoder.encode(request.getPassword()),
                 UserRole.USER,
-                UserStatus.ACTIVE
+                UserStatus.INACTIVE
         );
 
         userRepository.save(user);
@@ -61,7 +65,9 @@ public class AuthenticationService {
         return user;
     }
 
-    public TokensDTO login(String basicAuthorizationHeader) throws BadCredentialsException, IllegalArgumentException {
+    public TokensDTO login(String basicAuthorizationHeader)
+            throws BadCredentialsException, IllegalArgumentException, InternalError
+    {
         if (!basicAuthorizationHeader.startsWith(BASIC_PREFIX))
             throw new IllegalArgumentException("Invalid Authorization header format. Basic auth starts with 'Basic '.");
 
@@ -79,8 +85,42 @@ public class AuthenticationService {
 
         String token = jwtService.generateToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
+        user.setStatus(UserStatus.ACTIVE);
+
+        try {
+            userRepository.save(user);
+        }
+        catch (OptimisticLockingFailureException e) {
+            throw new InternalError("Internal error. Try again later.");
+        }
 
         return new TokensDTO(token, refreshToken);
+    }
+
+    public void logout(String username, HttpServletResponse response)
+            throws NoSuchElementException, InternalError
+    {
+        Cookie tokenCookie = new Cookie(JwtType.ACCESS_TOKEN.name(), null);
+        tokenCookie.setHttpOnly(true);
+        tokenCookie.setPath("/");
+        tokenCookie.setMaxAge(0);
+
+        Cookie refreshCookie = new Cookie(JwtType.REFRESH_TOKEN.name(), null);
+        refreshCookie.setHttpOnly(true);
+        refreshCookie.setPath("/authentication/noAuth/refreshToken");
+        refreshCookie.setMaxAge(0);
+
+        response.addCookie(tokenCookie);
+        response.addCookie(refreshCookie);
+
+        try {
+            User user = userRepository.findByLogin(username).orElseThrow();
+            user.setStatus(UserStatus.INACTIVE);
+            userRepository.save(user);
+        }
+        catch (OptimisticLockingFailureException e) {
+            throw new InternalError("Internal error. Try again later");
+        }
     }
 
     public String refreshToken(String refreshToken) throws BadCredentialsException {

@@ -42,6 +42,30 @@ public class AdminController {
         return ResponseEntity.ok(new DeleteResponseBody("Successfully banned user.", true));
     }
 
+    @PatchMapping("/unbanUser")
+    public ResponseEntity<DeleteResponseBody> unbanUser(
+            @RequestBody BanUserRequestBody requestBody
+    ) {
+        try {
+            adminService.unbanUser(requestBody.username());
+        }
+        catch (InternalError e) {
+            return ResponseEntity.internalServerError().body(
+                    new DeleteResponseBody(e.getMessage(), false)
+            );
+        }
+        catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(
+                    new DeleteResponseBody(e.getMessage(), false)
+            );
+        }
+        catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(new DeleteResponseBody("Successfully unbanned user.", true));
+    }
+
     @DeleteMapping("/deletePost")
     public ResponseEntity<DeleteResponseBody> deletePost(
             @RequestBody ManageObjectRequestBody requestBody

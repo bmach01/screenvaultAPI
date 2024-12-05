@@ -47,7 +47,7 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return status != UserStatus.DISABLED;
+        return status != UserStatus.INACTIVE;
     }
 
     @Override

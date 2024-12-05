@@ -106,4 +106,24 @@ public class AuthenticationController {
                 )
         );
     }
+
+    @DeleteMapping("/logout")
+    public ResponseEntity<AuthenticationResponseBody> logout(
+            HttpServletResponse response
+    ) {
+        Cookie tokenCookie = new Cookie(JwtType.ACCESS_TOKEN.name(), null);
+        tokenCookie.setHttpOnly(true);
+        tokenCookie.setPath("/");
+        tokenCookie.setMaxAge(0);
+
+        Cookie refreshCookie = new Cookie(JwtType.REFRESH_TOKEN.name(), null);
+        refreshCookie.setHttpOnly(true);
+        refreshCookie.setPath("/authentication/noAuth/refreshToken");
+        refreshCookie.setMaxAge(0);
+
+        response.addCookie(tokenCookie);
+        response.addCookie(refreshCookie);
+
+        return ResponseEntity.ok(new AuthenticationResponseBody("Successfully log out.", true));
+    }
 }

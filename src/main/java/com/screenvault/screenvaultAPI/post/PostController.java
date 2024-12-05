@@ -2,6 +2,7 @@ package com.screenvault.screenvaultAPI.post;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.screenvault.screenvaultAPI.collection.CollectionService;
 import com.screenvault.screenvaultAPI.rating.RatingService;
 import org.springframework.dao.PermissionDeniedDataAccessException;
 import org.springframework.data.domain.Page;
@@ -12,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 import java.util.NoSuchElementException;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/post")
@@ -19,11 +21,18 @@ public class PostController {
 
     private final PostService postService;
     private final RatingService ratingService;
+    private final CollectionService collectionService;
     private final ObjectMapper objectMapper;
 
-    public PostController(PostService postService, RatingService ratingService, ObjectMapper objectMapper) {
+    public PostController(
+            PostService postService,
+            RatingService ratingService,
+            CollectionService collectionService,
+            ObjectMapper objectMapper
+    ) {
         this.postService = postService;
         this.ratingService = ratingService;
+        this.collectionService = collectionService;
         this.objectMapper = objectMapper;
 
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -88,6 +97,28 @@ public class PostController {
             ratingService.addUserRatingToPosts(principal.getName(), post);
         }
         return ResponseEntity.ok(post);
+    }
+
+    @GetMapping("/getPostsByCollectionId")
+    public ResponseEntity<Page<Post>> getPostsFromCollection(
+            @RequestParam UUID collectionId,
+            @RequestParam int page,
+            @RequestParam int pageSize,
+            Principal principal
+    ) {
+        try {
+            Page<UUID> postIds = collectionService.getPaginatedPostIds(collectionId, page, pageSize);
+            Page<Post> posts = postService.getPostsByIds(postIds);
+
+            if (principal != null) {
+                ratingService.addUserRatingToPosts(principal.getName(), posts);
+            }
+
+            return ResponseEntity.ok(posts);
+        }
+        catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/noAuth/uploadPost")

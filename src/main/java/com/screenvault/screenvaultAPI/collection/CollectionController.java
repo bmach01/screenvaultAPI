@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.NoSuchElementException;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/collection")
@@ -29,6 +30,7 @@ public class CollectionController {
                             null
                     )
             );
+        // TODO: this can be cut right?
 
         return ResponseEntity.ok(
                 new GetCollectionsResponseBody(
@@ -37,6 +39,18 @@ public class CollectionController {
                         collectionService.getMyCollections(principal.getName())
                 )
         );
+    }
+
+    @GetMapping("/getCollectionById")
+    public ResponseEntity<Collection> getCollectionById(
+            @RequestParam UUID collectionId
+    ) {
+        try {
+            return ResponseEntity.ok(collectionService.getCollectionById(collectionId));
+        }
+        catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PatchMapping("/addPostToMyCollection")

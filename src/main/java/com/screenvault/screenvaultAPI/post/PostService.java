@@ -4,6 +4,7 @@ import com.screenvault.screenvaultAPI.comment.CommentRepository;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.dao.PermissionDeniedDataAccessException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -70,6 +71,15 @@ public class PostService {
         postAsyncService.incrementViewCountAndSave(post);
 
         return post;
+    }
+
+    public Page<Post> getPostsByIds(Page<UUID> postIds) {
+        List<Post> posts = postRepository.findByIdIn(postIds.getContent());
+        posts.forEach((it) -> {
+            it.setImageUrl(getImageUrlForPost(it));
+        });
+
+        return new PageImpl<>(posts, postIds.getPageable(), postIds.getTotalElements());
     }
 
     public Post uploadPost(String username, Post post, MultipartFile image)

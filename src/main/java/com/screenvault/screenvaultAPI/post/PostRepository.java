@@ -6,10 +6,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
-import java.util.Date;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public interface PostRepository extends PagingAndSortingRepository<Post, UUID>, MongoRepository<Post, UUID> {
     @Query(fields = "{ 'comments': 0, 'tags': 0 }")
@@ -28,4 +25,7 @@ public interface PostRepository extends PagingAndSortingRepository<Post, UUID>, 
 
     @Query("{ 'reports': { $gt: 0 } }")
     Optional<Page<Post>> findByReportsGreaterThanZero(Pageable pageable);
+
+    @Query(fields = "{ 'comments': 0, 'tags': 0 }")
+    List<Post> findByIdIn(List<UUID> ids);
 }

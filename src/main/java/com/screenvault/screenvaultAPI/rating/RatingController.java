@@ -24,11 +24,6 @@ public class RatingController {
             @RequestBody PostNewRatingRequestBody requestBody,
             Principal principal
     ) {
-        if (principal == null)
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-                    new RatingResponseBody("Sign in to post ratings.", false, null)
-            );
-
         Rating rating = null;
         try {
             rating = ratingService.postRating(principal.getName(), requestBody.score(), requestBody.postId());
@@ -58,11 +53,6 @@ public class RatingController {
             @RequestBody DeleteRatingRequestBody requestBody,
             Principal principal
     ) {
-        if (principal == null)
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-                    new RatingResponseBody("Sign in to manage ratings.", false, null)
-            );
-
         try {
             ratingService.deleteRating(principal.getName(), requestBody.postId());
         }

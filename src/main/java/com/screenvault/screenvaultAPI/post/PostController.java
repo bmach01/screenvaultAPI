@@ -3,6 +3,7 @@ package com.screenvault.screenvaultAPI.post;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.screenvault.screenvaultAPI.collection.CollectionService;
+import com.screenvault.screenvaultAPI.jwt.JwtService;
 import com.screenvault.screenvaultAPI.rating.RatingService;
 import org.springframework.dao.PermissionDeniedDataAccessException;
 import org.springframework.data.domain.Page;
@@ -23,17 +24,20 @@ public class PostController {
     private final PostService postService;
     private final RatingService ratingService;
     private final CollectionService collectionService;
+    private final JwtService jwtService;
     private final ObjectMapper objectMapper;
 
     public PostController(
             PostService postService,
             RatingService ratingService,
             CollectionService collectionService,
+            JwtService jwtService,
             ObjectMapper objectMapper
     ) {
         this.postService = postService;
         this.ratingService = ratingService;
         this.collectionService = collectionService;
+        this.jwtService = jwtService;
         this.objectMapper = objectMapper;
 
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -43,12 +47,14 @@ public class PostController {
     public ResponseEntity<Page<Post>> getLandingPagePosts(
             @RequestParam int page,
             @RequestParam int pageSize,
-            Principal principal
+            // JwtType.ACCESS_TOKEN.name() <-- annotation can't use variable value, also can't use Principal because it
+            // works only for endpoints that require authentication
+            @CookieValue(name = "ACCESS_TOKEN", defaultValue = "") String token
     ) {
         Page<Post> posts = postService.getLandingPagePostsPage(page, pageSize);
 
-        if (principal != null) {
-            ratingService.addUserRatingToPosts(principal.getName(), posts);
+        if (!token.isBlank()) {
+            ratingService.addUserRatingToPosts(jwtService.extractUsername(token), posts);
         }
 
         return ResponseEntity.ok(posts);
@@ -59,12 +65,14 @@ public class PostController {
             @RequestParam int page,
             @RequestParam int pageSize,
             @RequestParam String title,
-            Principal principal
+            // JwtType.ACCESS_TOKEN.name() <-- annotation can't use variable value, also can't use Principal because it
+            // works only for endpoints that require authentication
+            @CookieValue(name = "ACCESS_TOKEN", defaultValue = "") String token
     ) {
         Page<Post> posts = postService.getPostsByTitle(title, page, pageSize);
 
-        if (principal != null) {
-            ratingService.addUserRatingToPosts(principal.getName(), posts);
+        if (!token.isBlank()) {
+            ratingService.addUserRatingToPosts(jwtService.extractUsername(token), posts);
         }
 
         return ResponseEntity.ok(posts);
@@ -75,12 +83,14 @@ public class PostController {
             @RequestParam int page,
             @RequestParam int pageSize,
             @RequestParam Set<String> tags,
-            Principal principal
+            // JwtType.ACCESS_TOKEN.name() <-- annotation can't use variable value, also can't use Principal because it
+            // works only for endpoints that require authentication
+            @CookieValue(name = "ACCESS_TOKEN", defaultValue = "") String token
     ) {
         Page<Post> posts = postService.getPostsByTags(tags, page, pageSize);
 
-        if (principal != null) {
-            ratingService.addUserRatingToPosts(principal.getName(), posts);
+        if (!token.isBlank()) {
+            ratingService.addUserRatingToPosts(jwtService.extractUsername(token), posts);
         }
 
         return ResponseEntity.ok(posts);
@@ -89,7 +99,9 @@ public class PostController {
     @GetMapping("/noAuth/getPostById")
     public ResponseEntity<Post> getPostById(
             @RequestParam UUID postId,
-            Principal principal
+            // JwtType.ACCESS_TOKEN.name() <-- annotation can't use variable value, also can't use Principal because it
+            // works only for endpoints that require authentication
+            @CookieValue(name = "ACCESS_TOKEN", defaultValue = "") String token
     ) {
         Post post = null;
         try {
@@ -99,9 +111,10 @@ public class PostController {
             return ResponseEntity.notFound().build();
         }
 
-        if (principal != null) {
-            ratingService.addUserRatingToPosts(principal.getName(), post);
+        if (!token.isBlank()) {
+            ratingService.addUserRatingToPosts(jwtService.extractUsername(token), post);
         }
+
         return ResponseEntity.ok(post);
     }
 
@@ -110,14 +123,16 @@ public class PostController {
             @RequestParam int page,
             @RequestParam int pageSize,
             @RequestParam UUID collectionId,
-            Principal principal
+            // JwtType.ACCESS_TOKEN.name() <-- annotation can't use variable value, also can't use Principal because it
+            // works only for endpoints that require authentication
+            @CookieValue(name = "ACCESS_TOKEN", defaultValue = "") String token
     ) {
         try {
             Page<UUID> postIds = collectionService.getPaginatedPostIds(collectionId, page, pageSize);
             Page<Post> posts = postService.getPostsByIds(postIds);
 
-            if (principal != null) {
-                ratingService.addUserRatingToPosts(principal.getName(), posts);
+            if (!token.isBlank()) {
+                ratingService.addUserRatingToPosts(jwtService.extractUsername(token), posts);
             }
 
             return ResponseEntity.ok(posts);
@@ -131,7 +146,9 @@ public class PostController {
     public ResponseEntity<PostResponseBody> uploadPost(
             @RequestParam String postRequest,
             @RequestParam MultipartFile image,
-            Principal principal
+            // JwtType.ACCESS_TOKEN.name() <-- annotation can't use variable value, also can't use Principal because it
+            // works only for endpoints that require authentication
+            @CookieValue(name = "ACCESS_TOKEN", defaultValue = "") String token
     ) {
         Post post = null;
         try {
@@ -144,7 +161,7 @@ public class PostController {
         }
 
         Post savedPost = null;
-        String username = principal == null ? "Anonymous" : principal.getName();
+        String username = token.isBlank() ? "Anonymous" : jwtService.extractUsername(token);
         try {
             savedPost = postService.uploadPost(username, post, image);
         }

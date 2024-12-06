@@ -35,11 +35,6 @@ public class CommentController {
             @RequestBody PostCommentRequestBody requestBody,
             Principal principal
     ) {
-        if (principal == null)
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-                    new CommentResponseBody("Sign in to manage comments.", false, null)
-            );
-
         Comment savedComment = null;
         try {
             savedComment = commentService.uploadComment(principal.getName(), requestBody.postId(), requestBody.comment());
@@ -60,11 +55,6 @@ public class CommentController {
             @RequestBody DeleteCommentRequestBody requestBody,
             Principal principal
     ) {
-        if (principal == null)
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-                    new CommentResponseBody("Sign in to manage comments.", false, null)
-            );
-
         try {
             commentService.deleteComment(principal.getName(), requestBody.postId(), requestBody.commentId());
         }

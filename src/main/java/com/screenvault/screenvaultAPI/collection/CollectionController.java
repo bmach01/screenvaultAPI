@@ -58,11 +58,6 @@ public class CollectionController {
             @RequestBody AddPostToCollectionRequestBody requestBody,
             Principal principal
     ) {
-        if (principal == null)
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-                    new CollectionResponseBody("Sign in to manage collections.", false, null)
-            );
-
         Collection collection = null;
         try {
             collection = collectionService.addPostToMyCollection(principal.getName(), requestBody.postId(), requestBody.collectionId());
@@ -95,11 +90,6 @@ public class CollectionController {
             @RequestBody AddPostToCollectionRequestBody requestBody,
             Principal principal
     ) {
-        if (principal == null)
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-                    new CollectionResponseBody("Sign in to manage collections.", false, null)
-            );
-
         Collection collection = null;
         try {
             collection = collectionService.removePostFromMyCollection(principal.getName(), requestBody.postId(), requestBody.collectionId());
@@ -132,13 +122,7 @@ public class CollectionController {
             @RequestBody PostCollectionRequestBody requestBody,
             Principal principal
     ) {
-        if (principal == null)
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-                    new CollectionResponseBody("Sign in to manage collections.", false, null)
-            );
-
         Collection savedCollection = null;
-
         try {
             savedCollection = collectionService.uploadCollection(principal.getName(), requestBody.collection());
         }
@@ -158,11 +142,6 @@ public class CollectionController {
             @RequestBody DeleteCollectionRequestBody requestBody,
             Principal principal
     ) {
-        if (principal == null)
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-                    new CollectionResponseBody("Sign in to manage collections.", false, null)
-            );
-
         try {
             collectionService.deleteCollection(principal.getName(), requestBody.collectionId());
         }

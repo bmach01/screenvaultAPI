@@ -2,7 +2,6 @@ package com.screenvault.screenvaultAPI.post;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.screenvault.screenvaultAPI.collection.CollectionService;
 import com.screenvault.screenvaultAPI.jwt.JwtService;
 import com.screenvault.screenvaultAPI.rating.RatingService;
 import org.springframework.dao.PermissionDeniedDataAccessException;
@@ -23,20 +22,17 @@ public class PostController {
 
     private final PostService postService;
     private final RatingService ratingService;
-    private final CollectionService collectionService;
     private final JwtService jwtService;
     private final ObjectMapper objectMapper;
 
     public PostController(
             PostService postService,
             RatingService ratingService,
-            CollectionService collectionService,
             JwtService jwtService,
             ObjectMapper objectMapper
     ) {
         this.postService = postService;
         this.ratingService = ratingService;
-        this.collectionService = collectionService;
         this.jwtService = jwtService;
         this.objectMapper = objectMapper;
 
@@ -44,7 +40,7 @@ public class PostController {
     }
 
     @GetMapping("/noAuth/getLandingPagePosts")
-    public ResponseEntity<Page<Post>> getLandingPagePosts(
+    public ResponseEntity<GetPostsResponseBody> getLandingPagePosts(
             @RequestParam int page,
             @RequestParam int pageSize,
             // JwtType.ACCESS_TOKEN.name() <-- annotation can't use variable value, also can't use Principal because it
@@ -57,11 +53,11 @@ public class PostController {
             ratingService.addUserRatingToPosts(jwtService.extractUsername(token), posts);
         }
 
-        return ResponseEntity.ok(posts);
+        return ResponseEntity.ok(new GetPostsResponseBody("Successfully fetched posts.", true, posts));
     }
 
     @GetMapping("/noAuth/getPostsByTitles")
-    public ResponseEntity<Page<Post>> getPostsByTitles(
+    public ResponseEntity<GetPostsResponseBody> getPostsByTitles(
             @RequestParam int page,
             @RequestParam int pageSize,
             @RequestParam String title,
@@ -75,11 +71,11 @@ public class PostController {
             ratingService.addUserRatingToPosts(jwtService.extractUsername(token), posts);
         }
 
-        return ResponseEntity.ok(posts);
+        return ResponseEntity.ok(new GetPostsResponseBody("Successfully fetched posts.", true, posts));
     }
 
     @GetMapping("/noAuth/getPostsByTags")
-    public ResponseEntity<Page<Post>> getPostsByTags(
+    public ResponseEntity<GetPostsResponseBody> getPostsByTags(
             @RequestParam int page,
             @RequestParam int pageSize,
             @RequestParam Set<String> tags,
@@ -93,17 +89,18 @@ public class PostController {
             ratingService.addUserRatingToPosts(jwtService.extractUsername(token), posts);
         }
 
-        return ResponseEntity.ok(posts);
+        return ResponseEntity.ok(new GetPostsResponseBody("Successfully fetched posts.", true, posts));
     }
 
     @GetMapping("/noAuth/getPostById")
-    public ResponseEntity<Post> getPostById(
+    public ResponseEntity<GetPostResponseBody> getPostById(
             @RequestParam UUID postId,
             // JwtType.ACCESS_TOKEN.name() <-- annotation can't use variable value, also can't use Principal because it
             // works only for endpoints that require authentication
             @CookieValue(name = "ACCESS_TOKEN", defaultValue = "") String token
     ) {
         Post post = null;
+
         try {
             post = postService.getPostById(postId);
         }
@@ -115,11 +112,11 @@ public class PostController {
             ratingService.addUserRatingToPosts(jwtService.extractUsername(token), post);
         }
 
-        return ResponseEntity.ok(post);
+        return ResponseEntity.ok(new GetPostResponseBody("Successfully fetched post.", true, post));
     }
 
     @GetMapping("/getPostsByCollectionId")
-    public ResponseEntity<Page<Post>> getPostsFromCollection(
+    public ResponseEntity<GetPostsResponseBody> getPostsFromCollection(
             @RequestParam int page,
             @RequestParam int pageSize,
             @RequestParam UUID collectionId,
@@ -127,19 +124,22 @@ public class PostController {
             // works only for endpoints that require authentication
             @CookieValue(name = "ACCESS_TOKEN", defaultValue = "") String token
     ) {
+        Page<Post> posts = null;
+
         try {
-            Page<UUID> postIds = collectionService.getPaginatedPostIds(collectionId, page, pageSize);
-            Page<Post> posts = postService.getPostsByIds(postIds);
+            posts = postService.getPostsByCollectionId(collectionId, page, pageSize);
 
             if (!token.isBlank()) {
                 ratingService.addUserRatingToPosts(jwtService.extractUsername(token), posts);
             }
+        }
+        catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(
+                    new GetPostsResponseBody(e.getMessage(), false, null)
+            );
+        }
 
-            return ResponseEntity.ok(posts);
-        }
-        catch (NoSuchElementException e) {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.ok(new GetPostsResponseBody("Successfully fetched posts.", true, posts));
     }
 
     @PostMapping("/noAuth/uploadPost")
@@ -151,6 +151,7 @@ public class PostController {
             @CookieValue(name = "ACCESS_TOKEN", defaultValue = "") String token
     ) {
         Post post = null;
+
         try {
             post = objectMapper.readValue(postRequest, Post.class);
         }
@@ -162,6 +163,7 @@ public class PostController {
 
         Post savedPost = null;
         String username = token.isBlank() ? "Anonymous" : jwtService.extractUsername(token);
+
         try {
             savedPost = postService.uploadPost(username, post, image);
         }
@@ -184,13 +186,8 @@ public class PostController {
             @RequestBody DeletePostRequestBody requestBody,
             Principal principal
     ) {
-        if (principal == null)
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-                new PostResponseBody("Sign in to manage posts.", false, null)
-            );
-
         try {
-            postService.deletePost(principal.getName(), requestBody.postId());
+            postService.userMarkPostDeleted(principal.getName(), requestBody.postId());
         }
         catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(
@@ -218,25 +215,23 @@ public class PostController {
             @RequestBody UpdatePostVisibilityRequestBody requestBody,
             Principal principal
     ) {
-        if (principal == null)
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-                    new PostResponseBody("Sign in to manage posts.", false, null)
-            );
-
         Post updatedPost = null;
+
         try {
             updatedPost = postService.changePostVisibility(principal.getName(), requestBody.postId(), requestBody.toPublic());
-
         }
         catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(
                     new PostResponseBody(e.getMessage(), false, null)
             );
         }
-        catch (PermissionDeniedDataAccessException | NoSuchElementException e) {
+        catch (PermissionDeniedDataAccessException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
                     new PostResponseBody(e.getMessage(), false, null)
             );
+        }
+        catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
         }
         catch (InternalError e) {
             return ResponseEntity.internalServerError().body(

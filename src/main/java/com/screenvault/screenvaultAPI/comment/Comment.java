@@ -10,22 +10,35 @@ import java.util.UUID;
 public class Comment {
     @Id
     private UUID id = UUID.randomUUID();
+    private UUID postId;
     private String username;
     private String text;
-    private Date postedOn;
-    private boolean verified = false;
+    private Date postedOn = new Date();
+    private boolean isVerified = false;
     private int reportCount = 0;
+    private boolean isDeleted = false;
 
     public Comment() {
     }
 
-    public Comment(UUID id, String username, String text, Date postedOn, boolean verified, int reportCount) {
+    public Comment(
+            UUID id,
+            UUID postId,
+            String username,
+            String text,
+            Date postedOn,
+            boolean isVerified,
+            int reportCount,
+            boolean isDeleted
+    ) {
         this.id = id;
+        this.postId = postId;
         this.username = username;
         this.text = text;
         this.postedOn = postedOn;
-        this.verified = verified;
+        this.isVerified = isVerified;
         this.reportCount = reportCount;
+        this.isDeleted = isDeleted;
     }
 
     public UUID getId() {
@@ -61,11 +74,11 @@ public class Comment {
     }
 
     public boolean isVerified() {
-        return verified;
+        return isVerified;
     }
 
     public void setVerified(boolean verified) {
-        this.verified = verified;
+        this.isVerified = verified;
     }
 
     public int getReportCount() {
@@ -74,5 +87,21 @@ public class Comment {
 
     public void setReportCount(int reportCount) {
         this.reportCount = reportCount;
+    }
+
+    public UUID getPostId() {
+        return postId;
+    }
+
+    public void setPostId(UUID postId) {
+        this.postId = postId;
+    }
+
+    public boolean isDeleted() {
+        return isDeleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        isDeleted = deleted;
     }
 }

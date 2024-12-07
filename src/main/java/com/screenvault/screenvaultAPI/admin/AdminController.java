@@ -95,7 +95,7 @@ public class AdminController {
             @RequestBody ManageObjectRequestBody requestBody
     ) {
         try {
-            adminService.deleteComment(requestBody.postId(), requestBody.postId());
+            adminService.deleteComment(requestBody.postId());
         }
         catch (InternalError e) {
             return ResponseEntity.internalServerError().body(
@@ -115,19 +115,43 @@ public class AdminController {
     }
 
     @GetMapping("/getReportedPosts")
-    public ResponseEntity<Page<Post>> getReportedPosts(
+    public ResponseEntity<PageObjectResponseBody> getReportedPosts(
             @RequestParam int page,
             @RequestParam int pageSize
     ) {
-        return ResponseEntity.ok(adminService.getPageOfReportedPosts(page, pageSize));
+        Page<Post> posts = null;
+
+        try {
+            posts = adminService.getPageOfReportedPosts(page, pageSize);
+        }
+        catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(
+                    new PageObjectResponseBody(e.getMessage(), false, null)
+            );
+        }
+        return ResponseEntity.ok(
+                new PageObjectResponseBody("Successfully fetched reported posts.", true, posts)
+        );
     }
 
     @GetMapping("/getReportedComments")
-    public ResponseEntity<Page<Comment>> getReportedComments(
+    public ResponseEntity<PageObjectResponseBody> getReportedComments(
             @RequestParam int page,
             @RequestParam int pageSize
     ) {
-        return ResponseEntity.ok(adminService.getPageOfReportedComments(page, pageSize));
+        Page<Comment> comments = null;
+
+        try {
+            comments = adminService.getPageOfReportedComments(page, pageSize);
+        }
+        catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(
+                    new PageObjectResponseBody(e.getMessage(), false, null)
+            );
+        }
+        return ResponseEntity.ok(
+                new PageObjectResponseBody("Successfully fetched reported comments.", true, comments)
+        );
     }
 
     @PatchMapping("/verifyPost")

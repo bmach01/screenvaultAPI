@@ -114,7 +114,7 @@ public class AuthenticationService {
         response.addCookie(refreshCookie);
 
         try {
-            User user = userRepository.findByLogin(username).orElseThrow();
+            User user = userRepository.findByUsername(username).orElseThrow();
             user.setStatus(UserStatus.INACTIVE);
             userRepository.save(user);
         }

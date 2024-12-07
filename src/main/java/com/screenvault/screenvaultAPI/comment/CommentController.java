@@ -36,6 +36,7 @@ public class CommentController {
             Principal principal
     ) {
         Comment savedComment = null;
+
         try {
             savedComment = commentService.uploadComment(principal.getName(), requestBody.postId(), requestBody.comment());
         }
@@ -56,7 +57,7 @@ public class CommentController {
             Principal principal
     ) {
         try {
-            commentService.deleteComment(principal.getName(), requestBody.postId(), requestBody.commentId());
+            commentService.userMarkCommentDeleted(principal.getName(), requestBody.commentId());
         }
         catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(

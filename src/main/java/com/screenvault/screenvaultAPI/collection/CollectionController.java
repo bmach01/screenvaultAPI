@@ -22,16 +22,6 @@ public class CollectionController {
     public ResponseEntity<GetCollectionsResponseBody> getCollectionsByUserId(
             Principal principal
     ) {
-        if (principal == null)
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-                    new GetCollectionsResponseBody(
-                            "Only signed in users can have and fetch collections.",
-                            false,
-                            null
-                    )
-            );
-        // TODO: this can be cut right?
-
         return ResponseEntity.ok(
                 new GetCollectionsResponseBody(
                         "Successfully fetched my collections.",
@@ -41,16 +31,27 @@ public class CollectionController {
         );
     }
 
-    @GetMapping("/getCollectionById")
-    public ResponseEntity<Collection> getCollectionById(
-            @RequestParam UUID collectionId
+    @PatchMapping("/renameCollection")
+    public ResponseEntity<CollectionResponseBody> getCollectionById(
+            @RequestBody RenameCollectionRequestBody requestBody,
+            Principal principal
     ) {
+        Collection collection = null;
+
         try {
-            return ResponseEntity.ok(collectionService.getCollectionById(collectionId));
+            collection = collectionService.renameCollection(
+                    principal.getName(),
+                    requestBody.collectionId(),
+                    requestBody.newName()
+            );
         }
         catch (NoSuchElementException e) {
             return ResponseEntity.notFound().build();
         }
+
+        return ResponseEntity.ok(
+                new CollectionResponseBody("Successfully renamed the collection.", true, collection)
+        );
     }
 
     @PatchMapping("/addPostToMyCollection")
@@ -59,6 +60,7 @@ public class CollectionController {
             Principal principal
     ) {
         Collection collection = null;
+
         try {
             collection = collectionService.addPostToMyCollection(principal.getName(), requestBody.postId(), requestBody.collectionId());
         }
@@ -91,6 +93,7 @@ public class CollectionController {
             Principal principal
     ) {
         Collection collection = null;
+
         try {
             collection = collectionService.removePostFromMyCollection(principal.getName(), requestBody.postId(), requestBody.collectionId());
         }
@@ -123,6 +126,7 @@ public class CollectionController {
             Principal principal
     ) {
         Collection savedCollection = null;
+
         try {
             savedCollection = collectionService.uploadCollection(principal.getName(), requestBody.collection());
         }

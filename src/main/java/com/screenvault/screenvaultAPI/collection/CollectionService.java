@@ -1,16 +1,10 @@
 package com.screenvault.screenvaultAPI.collection;
 
-import org.bson.Document;
+import com.screenvault.screenvaultAPI.post.Post;
+import com.screenvault.screenvaultAPI.post.PostAsyncService;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.dao.PermissionDeniedDataAccessException;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationResults;
-import org.springframework.data.mongodb.core.aggregation.MatchOperation;
-import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -26,10 +20,16 @@ public class CollectionService {
 
     private final CollectionRepository collectionRepository;
     private final MongoTemplate mongoTemplate;
+    private final PostAsyncService postAsyncService;
 
-    public CollectionService(CollectionRepository collectionRepository, MongoTemplate mongoTemplate) {
+    public CollectionService(
+            CollectionRepository collectionRepository,
+            MongoTemplate mongoTemplate,
+            PostAsyncService postAsyncService
+    ) {
         this.collectionRepository = collectionRepository;
         this.mongoTemplate = mongoTemplate;
+        this.postAsyncService = postAsyncService;
     }
 
     public List<Collection> getMyCollections(String username) {
@@ -50,6 +50,12 @@ public class CollectionService {
         return collection;
     }
 
+    private boolean addPostToCollection(UUID postId, UUID collectionId) {
+        Query query = new Query(Criteria.where("id").is(postId));
+        Update update = new Update().addToSet("collectionIds", collectionId);
+        return mongoTemplate.updateFirst(query, update, Post.class).getModifiedCount() != 0;
+    }
+
     public Collection removePostFromMyCollection(String username, UUID postId, UUID collectionId)
             throws PermissionDeniedDataAccessException, IllegalArgumentException, NoSuchElementException
     {
@@ -64,16 +70,10 @@ public class CollectionService {
         return collection;
     }
 
-    private boolean addPostToCollection(UUID postId, UUID collectionId) {
-        Query query = new Query(Criteria.where("id").is(collectionId));
-        Update update = new Update().addToSet("posts", postId);
-        return mongoTemplate.updateFirst(query, update, Collection.class).getModifiedCount() != 0;
-    }
-
     private boolean removePostFromCollection(UUID postId, UUID collectionId) {
-        Query query = new Query(Criteria.where("id").is(collectionId));
-        Update update = new Update().pull("posts", postId);
-        return mongoTemplate.updateFirst(query, update, Collection.class).getModifiedCount() != 0;
+        Query query = new Query(Criteria.where("id").is(postId));
+        Update update = new Update().pull("collectionIds", collectionId);
+        return mongoTemplate.updateFirst(query, update, Post.class).getModifiedCount() != 0;
     }
 
     public Collection uploadCollection(String username, Collection collection)
@@ -100,31 +100,31 @@ public class CollectionService {
             if (!collection.getOwnerUsername().equals(username))
                 throw new PermissionDeniedDataAccessException("Collection is not principal's.", null);
 
-            collectionRepository.deleteById(collection.getId());
+            postAsyncService.removeCollectionFromPosts(collectionId);
+            collectionRepository.delete(collection);
         }
         catch (OptimisticLockingFailureException e) {
             throw new InternalError("Internal error. Try again later.");
         }
     }
 
-    public PageImpl<UUID> getPaginatedPostIds(UUID collectionId, int page, int pageSize) {
-        MatchOperation match = Aggregation.match(Criteria.where("_id").is(collectionId));
-        Pageable pageable = PageRequest.of(page, pageSize);
+    public Collection renameCollection(String username, UUID collectionId, String newName)
+            throws IllegalArgumentException, NoSuchElementException
+    {
+        Collection collection = null;
 
-        ProjectionOperation project = Aggregation.project()
-                .and("posts").slice(pageable.getPageSize(), (int) pageable.getOffset()).as("posts")
-                .and("posts").size().as("count");
+        try {
+            collection = collectionRepository.findById(collectionId).orElseThrow();
+            if (!collection.getOwnerUsername().equals(username))
+                throw new PermissionDeniedDataAccessException("Collection is not principal's.", null);
 
-        Aggregation aggregation = Aggregation.newAggregation(match, project);
-        AggregationResults<Document> result = mongoTemplate.aggregate(aggregation, "collection", Document.class);
-        Object postsObj = result.getMappedResults().getFirst().get("posts");
+            collection.setName(newName);
+            collectionRepository.save(collection);
+        }
+        catch (OptimisticLockingFailureException e) {
+            throw new InternalError("Internal error. Try again later.");
+        }
 
-        long count = Long.parseLong(result.getMappedResults().getFirst().get("count").toString());
-
-        return new PageImpl<>((List<UUID>) postsObj, pageable, count);
-    }
-
-    public Collection getCollectionById(UUID collectionId) {
-        return collectionRepository.findById(collectionId).orElseThrow();
+        return collection;
     }
 }

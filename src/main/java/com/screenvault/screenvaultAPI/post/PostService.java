@@ -1,6 +1,6 @@
 package com.screenvault.screenvaultAPI.post;
 
-import com.screenvault.screenvaultAPI.comment.CommentRepository;
+import com.screenvault.screenvaultAPI.comment.CommentService;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.dao.PermissionDeniedDataAccessException;
 import org.springframework.data.domain.Page;
@@ -9,7 +9,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.*;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.UUID;
 
 @Service
 public class PostService {
@@ -18,18 +21,18 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final ImageService imageService;
-    private final CommentRepository commentRepository;
+    private final CommentService commentService;
     private final PostAsyncService postAsyncService;
 
     public PostService(
             PostRepository postRepository,
             ImageService imageService,
-            CommentRepository commentRepository,
+            CommentService commentService,
             PostAsyncService postAsyncService
     ) {
         this.postRepository = postRepository;
         this.imageService = imageService;
-        this.commentRepository = commentRepository;
+        this.commentService = commentService;
         this.postAsyncService = postAsyncService;
     }
 
@@ -68,7 +71,7 @@ public class PostService {
     public Post getPostById(UUID postId) throws NoSuchElementException {
         Post post = postRepository.findById(postId).orElseThrow();
         post.setImageUrl(getImageUrlForPost(post));
-        postAsyncService.incrementViewCountAndSave(post);
+        postAsyncService.incrementViewCountAndSave(postId);
 
         return post;
     }
@@ -82,19 +85,25 @@ public class PostService {
         return new PageImpl<>(posts, postIds.getPageable(), postIds.getTotalElements());
     }
 
+    public Page<Post> getPostsByCollectionId(UUID collectionId, int page, int pageSize) {
+        Page<Post> posts = postRepository.findAllByCollectionId(collectionId, PageRequest.of(page, pageSize)).orElse(Page.empty());
+        posts.getContent().forEach((it) -> {
+            it.setImageUrl(getImageUrlForPost(it));
+        });
+
+        return posts;
+    }
+
     public Post uploadPost(String username, Post post, MultipartFile image)
             throws InternalError, IllegalArgumentException
     {
         if (image == null) throw new IllegalArgumentException("Image must not be null.");
+        if (post.getTitle().isBlank()) throw new IllegalArgumentException("Title must not be blank.");
         if (image.isEmpty()) throw new IllegalArgumentException("Image must not be empty.");
         if (!isValidImageType(image.getContentType()))
             throw new IllegalArgumentException("Image type not supported.");
 
         post.setPosterUsername(username);
-        post.setPostedOn(new Date());
-        post.setComments(Collections.emptyList());
-        post.setTags(Collections.emptySet());
-        post.setReportCount(0);
 
         Post savedPost = null;
         try {
@@ -113,7 +122,7 @@ public class PostService {
         return savedPost;
     }
 
-    public void deletePost(String username, UUID postId)
+    public void userMarkPostDeleted(String username, UUID postId)
             throws IllegalArgumentException, PermissionDeniedDataAccessException, InternalError, NoSuchElementException
     {
         try {
@@ -121,21 +130,20 @@ public class PostService {
             if (!post.getPosterUsername().equals(username))
                 throw new PermissionDeniedDataAccessException("Post is not principal's.", null);
 
-            imageService.deleteImage(post.getId().toString(), post.isPublic());
-
-            commentRepository.deleteByIdIn(post.getComments());
-            postRepository.deleteById(postId);
+            commentService.markCommentDeletedByPost(postId);
+            post.setDeleted(true);
+            postRepository.save(post);
         }
         catch (OptimisticLockingFailureException e) {
             throw new InternalError("Internal error. Try again later.");
         }
-
     }
 
     public Post changePostVisibility(String username, UUID postId, boolean toPublic)
             throws IllegalArgumentException, PermissionDeniedDataAccessException, InternalError, NoSuchElementException
     {
         Post post = null;
+
         try {
             post = postRepository.findById(postId).orElseThrow();
             if (post.isPublic() == toPublic) return post;

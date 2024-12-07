@@ -3,7 +3,6 @@ package com.screenvault.screenvaultAPI.collection;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -13,7 +12,6 @@ public class Collection {
     private UUID id = UUID.randomUUID();
     private String ownerUsername;
     private String name;
-    private List<UUID> posts = Collections.emptyList(); // present only in Collection details
 
     public Collection() {
     }
@@ -22,7 +20,6 @@ public class Collection {
         this.id = id;
         this.ownerUsername = ownerUsername;
         this.name = name;
-        this.posts = posts;
     }
 
     public UUID getId() {
@@ -47,13 +44,5 @@ public class Collection {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public List<UUID> getPosts() {
-        return posts;
-    }
-
-    public void setPosts(List<UUID> posts) {
-        this.posts = posts;
     }
 }

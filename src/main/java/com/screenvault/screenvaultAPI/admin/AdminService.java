@@ -60,35 +60,37 @@ public class AdminService {
     }
 
     public void deletePost(UUID postId) throws IllegalArgumentException, NoSuchElementException {
-        Post post = postRepository.findById(postId).orElseThrow();
-        commentRepository.deleteByIdIn(post.getComments());
-        postRepository.deleteById(postId);
+        try {
+            Post post = postRepository.findById(postId).orElseThrow();
+            post.setDeleted(true);
+            postRepository.save(post);
+        }
+        catch (OptimisticLockingFailureException e) {
+            throw new InternalError("Internal error. Try again later.");
+        }
+
     }
 
-    public void deleteComment(UUID postId, UUID commentId) throws IllegalArgumentException, InternalError {
+    public void deleteComment(UUID commentId) throws IllegalArgumentException, InternalError {
         try {
-            Post post = postRepository.findById(postId).orElse(null);
-            if (post != null) {
-                post.getComments().remove(postId);
-                postRepository.save(post);
-            }
-
-            commentRepository.deleteById(postId);
+            Comment comment = commentRepository.findById(commentId).orElseThrow();
+            comment.setDeleted(true);
+            commentRepository.save(comment);
         }
         catch (OptimisticLockingFailureException e) {
             throw new InternalError("Internal error. Try again later.");
         }
     }
 
-    public Page<Post> getPageOfReportedPosts(int page, int pageSize) {
+    public Page<Post> getPageOfReportedPosts(int page, int pageSize) throws IllegalArgumentException {
         return postRepository.findByReportsGreaterThanZero(
-                PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "reports"))
+                PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "reportCount"))
         ).orElse(Page.empty());
     }
 
-    public Page<Comment> getPageOfReportedComments(int page, int pageSize) {
+    public Page<Comment> getPageOfReportedComments(int page, int pageSize) throws IllegalArgumentException {
         return commentRepository.findByReportsGreaterThanZero(
-                PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "reports"))
+                PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "reportCount"))
         ).orElse(Page.empty());
     }
 

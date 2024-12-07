@@ -43,7 +43,7 @@ public class ReportController {
         }
 
         return ResponseEntity.ok(
-                new ReportResponseBody("Successfully verified comment.", true, savedReport)
+                new ReportResponseBody("Successfully reported post.", true, savedReport)
         );
     }
 
@@ -54,9 +54,10 @@ public class ReportController {
     ) {
         Report savedReport = null;
         try {
-            savedReport = reportService.reportPost(principal.getName(), requestBody.reportedObjectId());
+            savedReport = reportService.reportComment(principal.getName(), requestBody.reportedObjectId());
         }
         catch (NoSuchElementException e) {
+            System.out.println(e.getMessage());
             return ResponseEntity.notFound().build();
         }
         catch (InternalError e) {
@@ -71,7 +72,7 @@ public class ReportController {
         }
 
         return ResponseEntity.ok(
-                new ReportResponseBody("Successfully verified comment.", true, savedReport)
+                new ReportResponseBody("Successfully reported comment.", true, savedReport)
         );
     }
 }

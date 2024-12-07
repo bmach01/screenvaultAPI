@@ -48,8 +48,9 @@ public class ReportService {
             Post post = postRepository.findById(postId).orElseThrow();
             if (post.isVerified()) throw new IllegalArgumentException("Post has been already verified.");
 
+            postAsyncService.incrementReportCountAndSave(postId);
             report = new Report(key);
-            postAsyncService.incrementReportCountAndSave(post);
+            report = reportRepository.save(report);
         }
         catch (OptimisticLockingFailureException e) {
             throw new InternalError("Internal error. Try again later.");
@@ -70,8 +71,10 @@ public class ReportService {
             Comment comment = commentRepository.findById(commentId).orElseThrow();
             if (comment.isVerified()) throw new IllegalArgumentException("Comment has been already verified.");
 
-            report = new Report(key);
             commentAsyncService.incrementReportCountAndSave(comment);
+
+            report = new Report(key);
+            report = reportRepository.save(report);
         }
         catch (OptimisticLockingFailureException e) {
             throw new InternalError("Internal error. Try again later.");

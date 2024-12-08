@@ -1,5 +1,6 @@
 package com.screenvault.screenvaultAPI.post;
 
+import com.screenvault.screenvaultAPI.collection.CollectionRepository;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.dao.PermissionDeniedDataAccessException;
 import org.springframework.data.domain.Page;
@@ -17,15 +18,18 @@ public class PostService {
     private static final String[] VALID_IMAGE_TYPES = { "image/jpeg", "image/png", "image/svg+xml", "image/webp" };
 
     private final PostRepository postRepository;
+    private final CollectionRepository collectionRepository;
     private final ImageService imageService;
     private final PostAsyncService postAsyncService;
 
     public PostService(
             PostRepository postRepository,
+            CollectionRepository collectionRepository,
             ImageService imageService,
             PostAsyncService postAsyncService
     ) {
         this.postRepository = postRepository;
+        this.collectionRepository = collectionRepository;
         this.imageService = imageService;
         this.postAsyncService = postAsyncService;
     }
@@ -65,7 +69,10 @@ public class PostService {
         return post;
     }
 
-    public Page<Post> getPostsByCollectionId(UUID collectionId, int page, int pageSize) {
+    public Page<Post> getPostsByCollectionId(UUID collectionId, int page, int pageSize) throws IllegalArgumentException {
+        if (!collectionRepository.existsById(collectionId))
+            throw new IllegalArgumentException("Collection with that id does not exist.");
+
         Page<Post> posts = postRepository.findAllByCollectionId(collectionId, PageRequest.of(page, pageSize));
         posts.getContent().forEach((it) -> {
             it.setImageUrl(getImageUrlForPost(it));

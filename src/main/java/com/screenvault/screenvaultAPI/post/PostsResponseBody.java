@@ -2,9 +2,9 @@ package com.screenvault.screenvaultAPI.post;
 
 import org.springframework.data.domain.Page;
 
-public record GetPostsResponseBody(
+public record PostsResponseBody(
         String message,
         boolean success,
-        Page<Post> posts
+        Page<PostUserView> posts
 ) {
 }

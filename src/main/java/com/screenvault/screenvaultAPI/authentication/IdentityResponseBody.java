@@ -1,10 +1,10 @@
 package com.screenvault.screenvaultAPI.authentication;
 
-import com.screenvault.screenvaultAPI.user.User;
+import com.screenvault.screenvaultAPI.user.UserUserView;
 
 public record IdentityResponseBody(
         String message,
         boolean success,
-        User user
+        UserUserView user
 ) {
 }

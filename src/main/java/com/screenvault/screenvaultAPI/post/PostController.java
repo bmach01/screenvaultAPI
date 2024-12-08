@@ -40,7 +40,7 @@ public class PostController {
     }
 
     @GetMapping("/noAuth/getLandingPagePosts")
-    public ResponseEntity<GetPostsResponseBody> getLandingPagePosts(
+    public ResponseEntity<PostsResponseBody> getLandingPagePosts(
             @RequestParam int page,
             @RequestParam int pageSize,
             // JwtType.ACCESS_TOKEN.name() <-- annotation can't use variable value, also can't use Principal because it
@@ -53,11 +53,13 @@ public class PostController {
             ratingService.addUserRatingToPosts(jwtService.extractUsername(token), posts);
         }
 
-        return ResponseEntity.ok(new GetPostsResponseBody("Successfully fetched posts.", true, posts));
+        return ResponseEntity.ok(
+                new PostsResponseBody("Successfully fetched posts.", true, PostUserView.mapPage(posts))
+        );
     }
 
     @GetMapping("/noAuth/getPostsByTitles")
-    public ResponseEntity<GetPostsResponseBody> getPostsByTitles(
+    public ResponseEntity<PostsResponseBody> getPostsByTitles(
             @RequestParam int page,
             @RequestParam int pageSize,
             @RequestParam String title,
@@ -71,11 +73,13 @@ public class PostController {
             ratingService.addUserRatingToPosts(jwtService.extractUsername(token), posts);
         }
 
-        return ResponseEntity.ok(new GetPostsResponseBody("Successfully fetched posts.", true, posts));
+        return ResponseEntity.ok(
+                new PostsResponseBody("Successfully fetched posts.", true, PostUserView.mapPage(posts))
+        );
     }
 
     @GetMapping("/noAuth/getPostsByTags")
-    public ResponseEntity<GetPostsResponseBody> getPostsByTags(
+    public ResponseEntity<PostsResponseBody> getPostsByTags(
             @RequestParam int page,
             @RequestParam int pageSize,
             @RequestParam Set<String> tags,
@@ -89,11 +93,13 @@ public class PostController {
             ratingService.addUserRatingToPosts(jwtService.extractUsername(token), posts);
         }
 
-        return ResponseEntity.ok(new GetPostsResponseBody("Successfully fetched posts.", true, posts));
+        return ResponseEntity.ok(
+                new PostsResponseBody("Successfully fetched posts.", true, PostUserView.mapPage(posts))
+        );
     }
 
     @GetMapping("/noAuth/getPostById")
-    public ResponseEntity<GetPostResponseBody> getPostById(
+    public ResponseEntity<PostResponseBody> getPostById(
             @RequestParam UUID postId,
             // JwtType.ACCESS_TOKEN.name() <-- annotation can't use variable value, also can't use Principal because it
             // works only for endpoints that require authentication
@@ -112,11 +118,11 @@ public class PostController {
             ratingService.addUserRatingToPosts(jwtService.extractUsername(token), post);
         }
 
-        return ResponseEntity.ok(new GetPostResponseBody("Successfully fetched post.", true, post));
+        return ResponseEntity.ok(new PostResponseBody("Successfully fetched post.", true, new PostUserView(post)));
     }
 
     @GetMapping("/getPostsByCollectionId")
-    public ResponseEntity<GetPostsResponseBody> getPostsFromCollection(
+    public ResponseEntity<PostsResponseBody> getPostsFromCollection(
             @RequestParam int page,
             @RequestParam int pageSize,
             @RequestParam UUID collectionId,
@@ -135,11 +141,13 @@ public class PostController {
         }
         catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(
-                    new GetPostsResponseBody(e.getMessage(), false, null)
+                    new PostsResponseBody(e.getMessage(), false, null)
             );
         }
 
-        return ResponseEntity.ok(new GetPostsResponseBody("Successfully fetched posts.", true, posts));
+        return ResponseEntity.ok(
+                new PostsResponseBody("Successfully fetched posts.", true, PostUserView.mapPage(posts))
+        );
     }
 
     @PostMapping("/noAuth/uploadPost")
@@ -177,7 +185,7 @@ public class PostController {
         }
 
         return ResponseEntity.ok(
-                new PostResponseBody("Successfully uploaded new post", true, savedPost)
+                new PostResponseBody("Successfully uploaded new post", true, new PostUserView(savedPost))
         );
     }
 
@@ -240,7 +248,7 @@ public class PostController {
         }
 
         return ResponseEntity.ok(
-                new PostResponseBody("Successfully updated post visibility.", true, updatedPost)
+                new PostResponseBody("Successfully updated post visibility.", true, new PostUserView(updatedPost))
         );
     }
 }

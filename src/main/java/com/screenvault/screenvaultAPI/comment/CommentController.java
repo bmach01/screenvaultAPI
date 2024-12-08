@@ -21,13 +21,29 @@ public class CommentController {
     }
 
     @GetMapping("/noAuth/getCommentsUnderPost")
-    public ResponseEntity<Page<Comment>> getCommentsUnderPost(
+    public ResponseEntity<GetCommentsResponseBody> getCommentsUnderPost(
             @RequestParam UUID postId,
             @RequestParam int page,
             @RequestParam int pageSize
     ) {
-        Page<Comment> comments = commentService.getCommentsByPostId(postId, page, pageSize);
-        return ResponseEntity.ok(comments);
+        Page<Comment> comments = null;
+
+        try {
+            comments = commentService.getCommentsByPostId(postId, page, pageSize);
+        }
+        catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(
+                    new GetCommentsResponseBody(e.getMessage(), false, null)
+            );
+        }
+
+        return ResponseEntity.ok(
+                new GetCommentsResponseBody(
+                        "Successfully fetched comments.",
+                        true,
+                        CommentUserView.mapPage(comments)
+                )
+        );
     }
 
     @PostMapping("/postComment")
@@ -47,7 +63,7 @@ public class CommentController {
         }
 
         return ResponseEntity.ok(
-                new CommentResponseBody("Successfully uploaded comment", true, savedComment)
+                new CommentResponseBody("Successfully uploaded comment", true, new CommentUserView(savedComment))
         );
     }
 

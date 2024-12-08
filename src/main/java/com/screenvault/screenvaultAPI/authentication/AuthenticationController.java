@@ -2,6 +2,7 @@ package com.screenvault.screenvaultAPI.authentication;
 
 import com.screenvault.screenvaultAPI.jwt.JwtType;
 import com.screenvault.screenvaultAPI.user.User;
+import com.screenvault.screenvaultAPI.user.UserUserView;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
@@ -105,7 +106,7 @@ public class AuthenticationController {
                 new IdentityResponseBody(
                         "Successfully confirmed identity.",
                         true,
-                        authenticationService.getMyUser(token)
+                        new UserUserView(authenticationService.getMyUser(token))
                 )
         );
     }

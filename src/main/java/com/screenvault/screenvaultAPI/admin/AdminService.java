@@ -85,13 +85,11 @@ public class AdminService {
     public Page<Post> getPageOfReportedPosts(int page, int pageSize) throws IllegalArgumentException {
         return postRepository.findByReportsGreaterThanZero(
                 PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "reportCount"))
-        ).orElse(Page.empty());
+        );
     }
 
     public Page<Comment> getPageOfReportedComments(int page, int pageSize) throws IllegalArgumentException {
-        return commentRepository.findByReportsGreaterThanZero(
-                PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "reportCount"))
-        ).orElse(Page.empty());
+        return commentRepository.findReported(PageRequest.of(page, pageSize));
     }
 
     public Post verifyPost(UUID postId)

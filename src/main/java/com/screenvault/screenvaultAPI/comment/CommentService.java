@@ -6,10 +6,6 @@ import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.dao.PermissionDeniedDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import java.util.NoSuchElementException;
@@ -21,32 +17,29 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
-    private final MongoTemplate mongoTemplate;
     private final PostAsyncService postAsyncService;
 
     public CommentService(
             CommentRepository commentRepository,
             PostRepository postRepository,
-            MongoTemplate mongoTemplate,
             PostAsyncService postAsyncService
     ) {
         this.commentRepository = commentRepository;
         this.postRepository = postRepository;
-        this.mongoTemplate = mongoTemplate;
         this.postAsyncService = postAsyncService;
     }
 
     public Page<Comment> getCommentsByPostId(UUID postId, int page, int pageSize)
             throws IllegalArgumentException
     {
-        return commentRepository.findAllByPostId(postId, PageRequest.of(page, pageSize)).orElse(Page.empty());
+        return commentRepository.findByPostId(postId, PageRequest.of(page, pageSize));
     }
 
 
     public Comment uploadComment(String username, UUID postId, Comment comment)
-            throws IllegalArgumentException, NoSuchElementException, InternalError
+            throws IllegalArgumentException, InternalError
     {
-        if (!postRepository.existsById(postId)) throw new NoSuchElementException("No post with that id exists.");
+        if (!postRepository.existsById(postId)) throw new IllegalArgumentException("No post with that id exists.");
 
         Comment savedComment = null;
         comment.setUsername(username);
@@ -78,11 +71,5 @@ public class CommentService {
         catch (OptimisticLockingFailureException e) {
             throw new InternalError("Internal error. Try again later.");
         }
-    }
-
-    public void markCommentDeletedByPost(UUID postId) throws RuntimeException {
-        Query query = new Query(Criteria.where("postId").is(postId));
-        Update update = new Update().set("isDeleted", true);
-        mongoTemplate.updateMulti(query, update, Comment.class);
     }
 }

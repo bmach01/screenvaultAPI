@@ -1,9 +1,6 @@
 package com.screenvault.screenvaultAPI.post;
 
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
+import com.screenvault.screenvaultAPI.comment.CommentRepository;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -12,59 +9,59 @@ import java.util.UUID;
 @Service
 public class PostAsyncService {
 
-    private final MongoTemplate mongoTemplate;
+    private final CommentRepository commentRepository;
+    private final PostRepository postRepository;
 
-    public PostAsyncService(MongoTemplate mongoTemplate) {
-        this.mongoTemplate = mongoTemplate;
+    public PostAsyncService(CommentRepository commentRepository, PostRepository postRepository) {
+        this.commentRepository = commentRepository;
+        this.postRepository = postRepository;
     }
 
     @Async
     public void incrementViewCountAndSave(UUID postId) {
         try {
-            Query query = new Query(Criteria.where("_id").is(postId));
-            Update update = new Update().inc("viewCount", 1);
-            mongoTemplate.updateFirst(query, update, Post.class);
+            postRepository.incrementViewCount(postId);
         }
-        catch (RuntimeException ignore) {}
+        catch (Exception ignore) {}
     }
 
     @Async
     public void incrementReportCountAndSave(UUID postId) {
         try {
-            Query query = new Query(Criteria.where("_id").is(postId));
-            Update update = new Update().inc("reportCount", 1);
-            mongoTemplate.updateFirst(query, update, Post.class);
+            postRepository.incrementReportCount(postId);
         }
-        catch (RuntimeException ignore) {}
+        catch (Exception ignore) {}
     }
 
     @Async
     public void incrementCommentCountAndSave(UUID postId) {
         try {
-            Query query = new Query(Criteria.where("_id").is(postId));
-            Update update = new Update().inc("commentCount", 1);
-            mongoTemplate.updateFirst(query, update, Post.class);
+            postRepository.incrementCommentCount(postId);
         }
-        catch (RuntimeException ignore) {}
+        catch (Exception ignore) {}
     }
 
     @Async
     public void decrementCommentCountAndSave(UUID postId) {
         try {
-            Query query = new Query(Criteria.where("_id").is(postId));
-            Update update = new Update().inc("commentCount", -1);
-            mongoTemplate.updateFirst(query, update, Post.class);
+            postRepository.decrementCommentCount(postId);
         }
-        catch (RuntimeException ignore) {}
+        catch (Exception ignore) {}
     }
 
     @Async
     public void removeCollectionFromPosts(UUID collectionId) {
         try {
-            Query query = new Query(Criteria.where("collectionIds").is(collectionId));
-            Update update = new Update().pull("collectionIds", collectionId);
-            mongoTemplate.updateMulti(query, update, Post.class);
+            postRepository.removeCollectionFromPosts(collectionId);
         }
-        catch (RuntimeException ignore) {}
+        catch (Exception ignore) {}
+    }
+
+    @Async
+    public void markDeletedCommentsForPost(UUID postId) {
+        try {
+            commentRepository.markDeleteByPostId(postId);
+        }
+        catch (Exception ignore){}
     }
 }

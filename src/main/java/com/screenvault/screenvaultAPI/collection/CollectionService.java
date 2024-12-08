@@ -10,7 +10,6 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -33,7 +32,7 @@ public class CollectionService {
     }
 
     public List<Collection> getMyCollections(String username) {
-        return collectionRepository.findAllByOwnerUsername(username).orElse(Collections.emptyList());
+        return collectionRepository.findAllByOwnerUsername(username);
     }
 
     public Collection addPostToMyCollection(String username, UUID postId, UUID collectionId)

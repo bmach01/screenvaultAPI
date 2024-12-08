@@ -69,7 +69,7 @@ public class ReportService {
 
         try {
             Comment comment = commentRepository.findById(commentId).orElseThrow();
-            if (comment.isVerified()) throw new IllegalArgumentException("Comment has been already verified.");
+            if (comment.isVerified()) throw new IllegalArgumentException("Comment has been verified.");
 
             commentAsyncService.incrementReportCountAndSave(comment);
 

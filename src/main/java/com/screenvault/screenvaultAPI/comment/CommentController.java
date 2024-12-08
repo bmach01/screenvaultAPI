@@ -40,7 +40,7 @@ public class CommentController {
         try {
             savedComment = commentService.uploadComment(principal.getName(), requestBody.postId(), requestBody.comment());
         }
-        catch (IllegalArgumentException | NoSuchElementException e) {
+        catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(
                     new CommentResponseBody(e.getMessage(), false, null)
             );

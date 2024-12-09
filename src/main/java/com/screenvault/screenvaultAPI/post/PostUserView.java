@@ -1,5 +1,6 @@
 package com.screenvault.screenvaultAPI.post;
 
+import com.screenvault.screenvaultAPI.image.ImageService;
 import com.screenvault.screenvaultAPI.rating.Rating;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -12,6 +13,7 @@ public record PostUserView(
         UUID id,
         String title,
         String posterUsername,
+        String posterPfpUrl,
         String imageUrl,
         int score,
         int commentCount,
@@ -25,6 +27,7 @@ public record PostUserView(
             post.getId(),
             post.getTitle(),
             post.getPosterUsername(),
+            ImageService.getPublicImageUrl(post.getPosterUsername()),
             post.getImageUrl(),
             post.getScore(),
             post.getCommentCount(),

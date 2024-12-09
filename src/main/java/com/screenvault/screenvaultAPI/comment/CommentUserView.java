@@ -1,5 +1,6 @@
 package com.screenvault.screenvaultAPI.comment;
 
+import com.screenvault.screenvaultAPI.image.ImageService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
@@ -10,11 +11,19 @@ public record CommentUserView(
         UUID id,
         UUID postId,
         String username,
+        String userPfpUrl,
         String text,
         Date postedOn
 ) {
     public CommentUserView(Comment comment) {
-        this(comment.getId(), comment.getPostId(), comment.getUsername(), comment.getText(), comment.getPostedOn());
+        this(
+            comment.getId(),
+            comment.getPostId(),
+            comment.getUsername(),
+            ImageService.getPublicImageUrl(comment.getUsername()),
+            comment.getText(),
+            comment.getPostedOn()
+        );
     }
 
     public static Page<CommentUserView> mapPage(Page<Comment> comments) {

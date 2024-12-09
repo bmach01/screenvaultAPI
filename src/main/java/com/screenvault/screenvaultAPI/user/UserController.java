@@ -2,10 +2,8 @@ package com.screenvault.screenvaultAPI.user;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.AccessDeniedException;
 import java.security.Principal;
@@ -51,6 +49,33 @@ public class UserController {
         }
 
         return ResponseEntity.ok(new UserResponseBody("Successfully changed password.", true));
+    }
+
+    @PutMapping("/changePfp")
+    public ResponseEntity<UserResponseBody> uploadPost(
+            @RequestParam MultipartFile newImage,
+            Principal principal
+    ) {
+        try {
+            userService.changeProfilePicture(principal.getName(), newImage);
+        }
+        catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    new UserResponseBody(e.getMessage(), false)
+            );
+        }
+        catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(
+                    new UserResponseBody(e.getMessage(), false)
+            );
+        }
+        catch (InternalError e) {
+            return ResponseEntity.internalServerError().body(
+                    new UserResponseBody(e.getMessage(), false)
+            );
+        }
+
+        return ResponseEntity.ok(new UserResponseBody("Successfully changed profile picture.", true));
     }
 
 }

@@ -22,7 +22,13 @@ public class User implements UserDetails {
     public User() {
     }
 
-    public User(String username, String login, String password, UserRole role, UserStatus status) {
+    public User(
+            String username,
+            String login,
+            String password,
+            UserRole role,
+            UserStatus status
+    ) {
         this.username = username;
         this.login = login;
         this.password = password;

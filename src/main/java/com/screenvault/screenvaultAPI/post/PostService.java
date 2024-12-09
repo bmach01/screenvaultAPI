@@ -94,12 +94,7 @@ public class PostService {
         Post savedPost = null;
 
         try {
-            if (post.isPublic()) {
-                imageService.uploadPublicImage(image, post.getId().toString());
-            }
-            else {
-                imageService.uploadPrivateImage(image, post.getId().toString());
-            }
+            imageService.uploadImage(post.getId().toString(), image, post.isPublic());
 
             post.setPosterUsername(username);
             savedPost = postRepository.save(post);
@@ -161,7 +156,6 @@ public class PostService {
     }
 
     private String getImageUrlForPost(Post post) throws InternalError {
-        if (post.isPublic()) return imageService.getPublicImageUrl(post.getId().toString());
-        return imageService.getPrivateImageUrl(post.getId().toString());
+        return imageService.getImageUrl(post.getId().toString(), post.isPublic());
     }
 }

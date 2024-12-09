@@ -15,12 +15,11 @@ public class ImageService {
         this.customImageRepository = customImageRepository;
     }
 
-    public void uploadPrivateImage(MultipartFile image, String name) throws InternalError {
-        customImageRepository.saveImage(name, PRIVATE_BUCKET, image);
-    }
-
-    public void uploadPublicImage(MultipartFile image, String name) throws InternalError {
-        customImageRepository.saveImage(name, PUBLIC_BUCKET, image);
+    public void uploadImage(String name, MultipartFile image, boolean isPublic) throws InternalError {
+        if (isPublic)
+            customImageRepository.saveImage(name, PUBLIC_BUCKET, image);
+        else
+            customImageRepository.saveImage(name, PRIVATE_BUCKET, image);
     }
 
     public void deleteImage(String name, boolean isPublic) throws InternalError {
@@ -38,12 +37,13 @@ public class ImageService {
         customImageRepository.copyImageTo(name, PRIVATE_BUCKET, PUBLIC_BUCKET);
     }
 
-    public String getPrivateImageUrl(String name) throws InternalError {
+    // Although logic is overlapping it is more versatile and disposes of if-else structure further on
+    public String getImageUrl(String name, boolean isPublic) throws InternalError {
+        if (isPublic) return ImageRepositoryImpl.SERVER_URL + "/" + PUBLIC_BUCKET + "/" + name;
         return customImageRepository.getPresignedUrl(name, PRIVATE_BUCKET);
     }
 
-    public String getPublicImageUrl(String name) {
+    public static String getPublicImageUrl(String name) {
         return ImageRepositoryImpl.SERVER_URL + "/" + PUBLIC_BUCKET + "/" + name;
-        // TODO: make it cleaner? referencing CustomImageRepositoryImpl here is absolutely disgusting
     }
 }

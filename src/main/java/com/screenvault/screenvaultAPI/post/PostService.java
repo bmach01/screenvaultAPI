@@ -1,6 +1,7 @@
 package com.screenvault.screenvaultAPI.post;
 
 import com.screenvault.screenvaultAPI.collection.CollectionRepository;
+import com.screenvault.screenvaultAPI.image.ImageService;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.dao.PermissionDeniedDataAccessException;
 import org.springframework.data.domain.Page;

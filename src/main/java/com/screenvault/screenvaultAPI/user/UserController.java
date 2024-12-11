@@ -52,7 +52,7 @@ public class UserController {
     }
 
     @PutMapping("/changePfp")
-    public ResponseEntity<UserResponseBody> uploadPost(
+    public ResponseEntity<UserResponseBody> uploadPfp(
             @RequestParam MultipartFile newImage,
             Principal principal
     ) {
@@ -66,6 +66,27 @@ public class UserController {
         }
         catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(
+                    new UserResponseBody(e.getMessage(), false)
+            );
+        }
+        catch (InternalError e) {
+            return ResponseEntity.internalServerError().body(
+                    new UserResponseBody(e.getMessage(), false)
+            );
+        }
+
+        return ResponseEntity.ok(new UserResponseBody("Successfully changed profile picture.", true));
+    }
+
+    @DeleteMapping("/deletePfp")
+    public ResponseEntity<UserResponseBody> deletePfp(
+            Principal principal
+    ) {
+        try {
+            userService.deleteProfilePicture(principal.getName());
+        }
+        catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                     new UserResponseBody(e.getMessage(), false)
             );
         }

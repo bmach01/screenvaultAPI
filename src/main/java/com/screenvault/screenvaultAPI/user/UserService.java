@@ -23,7 +23,7 @@ public class UserService {
     }
 
     public void changePassword(String username, String oldPassword, String newPassword)
-        throws IllegalArgumentException, NoSuchElementException, InternalError, AccessDeniedException
+            throws IllegalArgumentException, NoSuchElementException, InternalError, AccessDeniedException
     {
         if (newPassword == null || newPassword.isBlank())
             throw new IllegalArgumentException("Credentials and username may not be blank or null.");
@@ -43,12 +43,21 @@ public class UserService {
     }
 
     public void changeProfilePicture(String username, MultipartFile newPicture)
-        throws AccessDeniedException, IllegalArgumentException, InternalError
+            throws AccessDeniedException, IllegalArgumentException, InternalError
     {
         if (!userRepository.existsById(username))
-            throw new AccessDeniedException("Acccess denied. Access not authorized.");
+            throw new AccessDeniedException("Access not authorized.");
 
         imageService.deleteImage(username, true);
         imageService.uploadImage(username, newPicture, true);
+    }
+
+    public void deleteProfilePicture(String username)
+            throws AccessDeniedException, InternalError
+    {
+        if (!userRepository.existsById(username))
+            throw new AccessDeniedException("Access not authorized.");
+
+        imageService.deleteImage(username, true);
     }
 }

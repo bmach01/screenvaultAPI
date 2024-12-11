@@ -68,7 +68,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfig = new CorsConfiguration();
-        corsConfig.setAllowedOrigins(Arrays.asList("http://localhost:4200")); // Your front-end origin
+        corsConfig.setAllowedOrigins(Arrays.asList("http://localhost:4200","https://gray-river-074bfb703.4.azurestaticapps.net","https://lemon-tree-0ef71a603.4.azurestaticapps.net")); // Your front-end origin
         corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"));
         corsConfig.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
         corsConfig.setAllowCredentials(true); // Allow cookies or Authorization header

@@ -1,5 +1,7 @@
 package com.screenvault.screenvaultAPI.post;
 
+import com.screenvault.screenvaultAPI.collection.CollectionRepository;
+import com.screenvault.screenvaultAPI.image.ImageService;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.dao.PermissionDeniedDataAccessException;
 import org.springframework.data.domain.Page;
@@ -17,15 +19,18 @@ public class PostService {
     private static final String[] VALID_IMAGE_TYPES = { "image/jpeg", "image/png", "image/svg+xml", "image/webp" };
 
     private final PostRepository postRepository;
+    private final CollectionRepository collectionRepository;
     private final ImageService imageService;
     private final PostAsyncService postAsyncService;
 
     public PostService(
             PostRepository postRepository,
+            CollectionRepository collectionRepository,
             ImageService imageService,
             PostAsyncService postAsyncService
     ) {
         this.postRepository = postRepository;
+        this.collectionRepository = collectionRepository;
         this.imageService = imageService;
         this.postAsyncService = postAsyncService;
     }
@@ -65,7 +70,10 @@ public class PostService {
         return post;
     }
 
-    public Page<Post> getPostsByCollectionId(UUID collectionId, int page, int pageSize) {
+    public Page<Post> getPostsByCollectionId(UUID collectionId, int page, int pageSize) throws IllegalArgumentException {
+        if (!collectionRepository.existsById(collectionId))
+            throw new IllegalArgumentException("Collection with that id does not exist.");
+
         Page<Post> posts = postRepository.findAllByCollectionId(collectionId, PageRequest.of(page, pageSize));
         posts.getContent().forEach((it) -> {
             it.setImageUrl(getImageUrlForPost(it));
@@ -86,12 +94,7 @@ public class PostService {
         Post savedPost = null;
 
         try {
-            if (post.isPublic()) {
-                imageService.uploadPublicImage(image, post.getId().toString());
-            }
-            else {
-                imageService.uploadPrivateImage(image, post.getId().toString());
-            }
+            imageService.uploadImage(post.getId().toString(), image, post.isPublic());
 
             post.setPosterUsername(username);
             savedPost = postRepository.save(post);
@@ -153,7 +156,6 @@ public class PostService {
     }
 
     private String getImageUrlForPost(Post post) throws InternalError {
-        if (post.isPublic()) return imageService.getPublicImageUrl(post.getId().toString());
-        return imageService.getPrivateImageUrl(post.getId().toString());
+        return imageService.getImageUrl(post.getId().toString(), post.isPublic());
     }
 }

@@ -29,9 +29,8 @@ public class CommentService {
         this.postAsyncService = postAsyncService;
     }
 
-    public Page<Comment> getCommentsByPostId(UUID postId, int page, int pageSize)
-            throws IllegalArgumentException
-    {
+    public Page<Comment> getCommentsByPostId(UUID postId, int page, int pageSize) throws IllegalArgumentException {
+        if (!postRepository.existsById(postId)) throw new IllegalArgumentException("Post of this id does not exist.");
         return commentRepository.findByPostId(postId, PageRequest.of(page, pageSize));
     }
 

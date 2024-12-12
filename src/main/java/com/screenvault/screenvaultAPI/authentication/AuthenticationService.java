@@ -3,10 +3,7 @@ package com.screenvault.screenvaultAPI.authentication;
 
 import com.screenvault.screenvaultAPI.jwt.JwtService;
 import com.screenvault.screenvaultAPI.jwt.JwtType;
-import com.screenvault.screenvaultAPI.user.User;
-import com.screenvault.screenvaultAPI.user.UserRepository;
-import com.screenvault.screenvaultAPI.user.UserRole;
-import com.screenvault.screenvaultAPI.user.UserStatus;
+import com.screenvault.screenvaultAPI.user.*;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -25,15 +22,18 @@ public class AuthenticationService {
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+    private final UserService userService;
 
     public AuthenticationService(
             UserRepository userRepository,
+            JwtService jwtService,
             PasswordEncoder passwordEncoder,
-            JwtService jwtService
+            UserService userService
     ) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
+        this.userService = userService;
     }
 
     private boolean isBlankOrNull(String str) {

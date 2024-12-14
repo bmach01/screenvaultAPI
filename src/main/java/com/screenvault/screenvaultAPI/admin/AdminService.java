@@ -2,6 +2,7 @@ package com.screenvault.screenvaultAPI.admin;
 
 import com.screenvault.screenvaultAPI.comment.Comment;
 import com.screenvault.screenvaultAPI.comment.CommentRepository;
+import com.screenvault.screenvaultAPI.image.ImageService;
 import com.screenvault.screenvaultAPI.post.Post;
 import com.screenvault.screenvaultAPI.post.PostRepository;
 import com.screenvault.screenvaultAPI.report.ReportRepository;
@@ -24,17 +25,20 @@ public class AdminService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final ReportRepository reportRepository;
+    private final ImageService imageService;
 
     public AdminService(
             UserRepository userRepository,
             PostRepository postRepository,
             CommentRepository commentRepository,
-            ReportRepository reportRepository
+            ReportRepository reportRepository,
+            ImageService imageService
     ) {
         this.userRepository = userRepository;
         this.postRepository = postRepository;
         this.commentRepository = commentRepository;
         this.reportRepository = reportRepository;
+        this.imageService = imageService;
     }
 
     public void banUser(String username) throws InternalError, IllegalArgumentException, NoSuchElementException {
@@ -83,9 +87,14 @@ public class AdminService {
     }
 
     public Page<Post> getPageOfReportedPosts(int page, int pageSize) throws IllegalArgumentException {
-        return postRepository.findByReportsGreaterThanZero(
+        Page<Post> posts = postRepository.findByReportsGreaterThanZero(
                 PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "reportCount"))
         );
+        posts.getContent().forEach((it) -> {
+            it.setImageUrl(imageService.getImageUrl(it.getId().toString(), it.isPublic()));
+        });
+
+        return posts;
     }
 
     public Page<Comment> getPageOfReportedComments(int page, int pageSize) throws IllegalArgumentException {

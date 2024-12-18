@@ -22,7 +22,7 @@ jobs:
           java-version: '21'
 
       - name: Build with Gradle
-        run: ./gradlew build
+        run: ./gradlew bootJar
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v3

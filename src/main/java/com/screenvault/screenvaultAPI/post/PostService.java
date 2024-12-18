@@ -2,6 +2,7 @@ package com.screenvault.screenvaultAPI.post;
 
 import com.screenvault.screenvaultAPI.collection.CollectionRepository;
 import com.screenvault.screenvaultAPI.image.ImageService;
+import com.screenvault.screenvaultAPI.moderation.ModerationService;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.dao.PermissionDeniedDataAccessException;
 import org.springframework.data.domain.Page;
@@ -22,17 +23,20 @@ public class PostService {
     private final CollectionRepository collectionRepository;
     private final ImageService imageService;
     private final PostAsyncService postAsyncService;
+    private final ModerationService moderationService;
 
     public PostService(
             PostRepository postRepository,
             CollectionRepository collectionRepository,
             ImageService imageService,
-            PostAsyncService postAsyncService
+            PostAsyncService postAsyncService,
+            ModerationService moderationService
     ) {
         this.postRepository = postRepository;
         this.collectionRepository = collectionRepository;
         this.imageService = imageService;
         this.postAsyncService = postAsyncService;
+        this.moderationService = moderationService;
     }
 
     public Page<Post> getLandingPagePostsPage(int page, int pageSize) {
@@ -94,6 +98,9 @@ public class PostService {
         Post savedPost = null;
 
         try {
+            if (moderationService.isImageFlagged(image)) {
+                throw new IllegalArgumentException("Image did not pass the verification process.");
+            }
             imageService.uploadImage(post.getId().toString(), image, post.isPublic());
 
             post.setPosterUsername(username);

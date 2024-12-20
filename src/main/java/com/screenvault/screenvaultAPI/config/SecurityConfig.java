@@ -28,7 +28,7 @@ public class SecurityConfig {
 
     private final UserDetailsServiceImpl userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final static List<String> CONTROLLERS = List.of("authentication", "collection", "comment", "post", "rating", "test");
+    private final static List<String> CONTROLLERS = List.of("authentication", "collection", "comment", "post", "rating", "test", "verification");
 
     public SecurityConfig(UserDetailsServiceImpl userDetailsService, JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.userDetailsService = userDetailsService;

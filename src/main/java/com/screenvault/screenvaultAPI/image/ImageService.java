@@ -8,6 +8,7 @@ public class ImageService {
 
     private static final String PUBLIC_BUCKET = "public";
     private static final String PRIVATE_BUCKET = "private";
+    private static final String[] VALID_IMAGE_TYPES = { "image/jpeg", "image/png", "image/svg+xml", "image/webp" };
 
     private final CustomImageRepository customImageRepository;
 
@@ -15,7 +16,10 @@ public class ImageService {
         this.customImageRepository = customImageRepository;
     }
 
-    public void uploadImage(String name, MultipartFile image, boolean isPublic) throws InternalError {
+    public void uploadImage(String name, MultipartFile image, boolean isPublic) throws InternalError, IllegalArgumentException {
+        if (!isValidImageType(image.getContentType()))
+            throw new IllegalArgumentException("Image type not supported.");
+
         if (isPublic)
             customImageRepository.saveImage(name, PUBLIC_BUCKET, image);
         else
@@ -45,5 +49,10 @@ public class ImageService {
 
     public static String getPublicImageUrl(String name) {
         return ImageRepositoryImpl.SERVER_URL + "/" + PUBLIC_BUCKET + "/" + name;
+    }
+
+    private boolean isValidImageType(String type) {
+        for (String valid : VALID_IMAGE_TYPES) if (type.equals(valid)) return true;
+        return false;
     }
 }

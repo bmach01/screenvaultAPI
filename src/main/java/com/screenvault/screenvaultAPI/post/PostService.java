@@ -2,7 +2,6 @@ package com.screenvault.screenvaultAPI.post;
 
 import com.screenvault.screenvaultAPI.collection.CollectionRepository;
 import com.screenvault.screenvaultAPI.image.ImageService;
-import com.screenvault.screenvaultAPI.moderation.ModerationService;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.dao.PermissionDeniedDataAccessException;
 import org.springframework.data.domain.Page;
@@ -17,26 +16,21 @@ import java.util.UUID;
 @Service
 public class PostService {
 
-    private static final String[] VALID_IMAGE_TYPES = { "image/jpeg", "image/png", "image/svg+xml", "image/webp" };
-
     private final PostRepository postRepository;
     private final CollectionRepository collectionRepository;
     private final ImageService imageService;
     private final PostAsyncService postAsyncService;
-    private final ModerationService moderationService;
 
     public PostService(
             PostRepository postRepository,
             CollectionRepository collectionRepository,
             ImageService imageService,
-            PostAsyncService postAsyncService,
-            ModerationService moderationService
+            PostAsyncService postAsyncService
     ) {
         this.postRepository = postRepository;
         this.collectionRepository = collectionRepository;
         this.imageService = imageService;
         this.postAsyncService = postAsyncService;
-        this.moderationService = moderationService;
     }
 
     public Page<Post> getLandingPagePostsPage(int page, int pageSize) {
@@ -92,17 +86,10 @@ public class PostService {
         if (image == null) throw new IllegalArgumentException("Image must not be null.");
         if (post.getTitle().isBlank()) throw new IllegalArgumentException("Title must not be blank.");
         if (image.isEmpty()) throw new IllegalArgumentException("Image must not be empty.");
-        if (!isValidImageType(image.getContentType()))
-            throw new IllegalArgumentException("Image type not supported.");
 
         Post savedPost = null;
 
         try {
-            if (moderationService.isImageFlagged(image)) {
-                throw new IllegalArgumentException("Image did not pass the verification process.");
-            }
-            imageService.uploadImage(post.getId().toString(), image, post.isPublic());
-
             post.setPosterUsername(username);
             savedPost = postRepository.save(post);
         }
@@ -155,11 +142,6 @@ public class PostService {
 
         post.setImageUrl(getImageUrlForPost(post));
         return post;
-    }
-
-    private boolean isValidImageType(String type) {
-        for (String valid : VALID_IMAGE_TYPES) if (type.equals(valid)) return true;
-        return false;
     }
 
     private String getImageUrlForPost(Post post) throws InternalError {

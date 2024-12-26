@@ -5,7 +5,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.UUID;
 
-public interface CustomPostRepository {
+public interface PostCustomRepository {
     Page<Post> findReported(Pageable pageable);
     void incrementViewCount(UUID postId);
     void incrementReportCount(UUID postId);

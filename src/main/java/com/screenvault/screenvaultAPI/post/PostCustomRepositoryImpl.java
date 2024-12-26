@@ -12,11 +12,11 @@ import org.springframework.data.mongodb.core.query.Update;
 import java.util.List;
 import java.util.UUID;
 
-public class CustomPostRepositoryImpl implements CustomPostRepository {
+public class PostCustomRepositoryImpl implements PostCustomRepository {
 
     private final MongoTemplate mongoTemplate;
 
-    public CustomPostRepositoryImpl(MongoTemplate mongoTemplate) {
+    public PostCustomRepositoryImpl(MongoTemplate mongoTemplate) {
         this.mongoTemplate = mongoTemplate;
     }
 

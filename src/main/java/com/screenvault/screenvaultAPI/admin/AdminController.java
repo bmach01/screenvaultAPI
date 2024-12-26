@@ -115,7 +115,7 @@ public class AdminController {
     }
 
     @GetMapping("/getReportedPosts")
-    public ResponseEntity<PageObjectResponseBody> getReportedPosts(
+    public ResponseEntity<ObjectResponseBody> getReportedPosts(
             @RequestParam int page,
             @RequestParam int pageSize
     ) {
@@ -126,16 +126,16 @@ public class AdminController {
         }
         catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(
-                    new PageObjectResponseBody(e.getMessage(), false, null)
+                    new ObjectResponseBody(e.getMessage(), false, null)
             );
         }
         return ResponseEntity.ok(
-                new PageObjectResponseBody("Successfully fetched reported posts.", true, posts)
+                new ObjectResponseBody("Successfully fetched reported posts.", true, posts)
         );
     }
 
     @GetMapping("/getReportedComments")
-    public ResponseEntity<PageObjectResponseBody> getReportedComments(
+    public ResponseEntity<ObjectResponseBody> getReportedComments(
             @RequestParam int page,
             @RequestParam int pageSize
     ) {
@@ -146,11 +146,11 @@ public class AdminController {
         }
         catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(
-                    new PageObjectResponseBody(e.getMessage(), false, null)
+                    new ObjectResponseBody(e.getMessage(), false, null)
             );
         }
         return ResponseEntity.ok(
-                new PageObjectResponseBody("Successfully fetched reported comments.", true, comments)
+                new ObjectResponseBody("Successfully fetched reported comments.", true, comments)
         );
     }
 

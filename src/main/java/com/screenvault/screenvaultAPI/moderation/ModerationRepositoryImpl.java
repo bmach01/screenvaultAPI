@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.List;
 
 @Service
-public class VerificationRepoImpl implements VerificationRepo {
+public class ModerationRepositoryImpl implements ModerationRepository {
 
     private static final String API_KEY = System.getenv("SCREENVAULT_OPENAI_API_KEY");
     private static final String MODERATION_API_URL = System.getenv("SCREENVAULT_MODERATION_API_URL");
@@ -21,7 +21,7 @@ public class VerificationRepoImpl implements VerificationRepo {
     private final OkHttpClient client;
     private final ObjectMapper objectMapper;
 
-    public VerificationRepoImpl(OkHttpClient client, ObjectMapper objectMapper) {
+    public ModerationRepositoryImpl(OkHttpClient client, ObjectMapper objectMapper) {
         this.client = client;
         this.objectMapper = objectMapper;
     }

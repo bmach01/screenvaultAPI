@@ -8,7 +8,7 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 
 import java.util.UUID;
 
-public interface CommentRepository extends PagingAndSortingRepository<Comment, UUID>, CustomCommentRepository, MongoRepository<Comment, UUID> {
+public interface CommentRepository extends PagingAndSortingRepository<Comment, UUID>, CommentCustomRepository, MongoRepository<Comment, UUID> {
     @Query(value = "{ 'postId': ?0, 'isDeleted': { $ne: true } }",
             fields = "{ 'reportCount': 0, 'isDeleted': 0, 'isVerified': 0 }")
     Page<Comment> findByPostId(UUID postId, Pageable pageable);

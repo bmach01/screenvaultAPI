@@ -11,24 +11,24 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/verification")
-public class VerificationController {
+public class ModerationController {
 
-    private final VerificationService verificationService;
+    private final ModerationService moderationService;
 
-    public VerificationController(VerificationService verificationService) {
-        this.verificationService = verificationService;
+    public ModerationController(ModerationService moderationService) {
+        this.moderationService = moderationService;
     }
 
     @PostMapping("/noAuth/verifyAndGetTags")
     public ResponseEntity<VerificationAndTagsResponseBody> verifyAndGetTags(
             @RequestParam MultipartFile image
     ) {
-        String imageB64 = verificationService.encodeImageToB64(image);
+        String imageB64 = moderationService.encodeImageToB64(image);
         try {
-            boolean flagged = verificationService.isImageFlagged(imageB64);
+            boolean flagged = moderationService.isImageFlagged(imageB64);
 
             if (!flagged) {
-                Set<String> tags = verificationService.getImageTags(imageB64);
+                Set<String> tags = moderationService.getImageTags(imageB64);
 
                 if (!tags.contains("EXPLICIT"))
                     return ResponseEntity.ok(new VerificationAndTagsResponseBody(

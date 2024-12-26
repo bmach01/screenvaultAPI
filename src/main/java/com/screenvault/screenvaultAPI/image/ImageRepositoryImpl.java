@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.web.multipart.MultipartFile;
 
 @Repository
-public class ImageRepositoryImpl implements CustomImageRepository {
+public class ImageRepositoryImpl implements ImageRepository {
 
     public static final String SERVER_URL = System.getenv("SCREENVAULT_MINIO_URL");
     private static final String ACCESS_KEY = System.getenv("SCREENVAULT_MINIO_ACCESS_KEY");

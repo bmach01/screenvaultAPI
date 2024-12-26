@@ -5,7 +5,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.UUID;
 
-public interface CustomCommentRepository {
+public interface CommentCustomRepository {
     Page<Comment> findReported(Pageable pageable);
     void markDeleteByPostId(UUID postId);
 }

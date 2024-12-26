@@ -10,10 +10,10 @@ public class ImageService {
     private static final String PRIVATE_BUCKET = "private";
     private static final String[] VALID_IMAGE_TYPES = { "image/jpeg", "image/png", "image/svg+xml", "image/webp" };
 
-    private final CustomImageRepository customImageRepository;
+    private final ImageRepository imageRepository;
 
-    public ImageService(CustomImageRepository customImageRepository) {
-        this.customImageRepository = customImageRepository;
+    public ImageService(ImageRepository imageRepository) {
+        this.imageRepository = imageRepository;
     }
 
     public void uploadImage(String name, MultipartFile image, boolean isPublic) throws InternalError, IllegalArgumentException {
@@ -21,30 +21,30 @@ public class ImageService {
             throw new IllegalArgumentException("Image type not supported.");
 
         if (isPublic)
-            customImageRepository.saveImage(name, PUBLIC_BUCKET, image);
+            imageRepository.saveImage(name, PUBLIC_BUCKET, image);
         else
-            customImageRepository.saveImage(name, PRIVATE_BUCKET, image);
+            imageRepository.saveImage(name, PRIVATE_BUCKET, image);
     }
 
     public void deleteImage(String name, boolean isPublic) throws InternalError {
         if (isPublic)
-            customImageRepository.deleteImage(name, PUBLIC_BUCKET);
+            imageRepository.deleteImage(name, PUBLIC_BUCKET);
         else
-            customImageRepository.deleteImage(name, PRIVATE_BUCKET);
+            imageRepository.deleteImage(name, PRIVATE_BUCKET);
     }
 
     public void moveImageToPrivate(String name) throws InternalError {
-        customImageRepository.copyImageTo(name, PUBLIC_BUCKET, PRIVATE_BUCKET);
+        imageRepository.copyImageTo(name, PUBLIC_BUCKET, PRIVATE_BUCKET);
     }
 
     public void moveImageToPublic(String name) throws InternalError {
-        customImageRepository.copyImageTo(name, PRIVATE_BUCKET, PUBLIC_BUCKET);
+        imageRepository.copyImageTo(name, PRIVATE_BUCKET, PUBLIC_BUCKET);
     }
 
     // Although logic is overlapping it is more versatile and disposes of if-else structure further on
     public String getImageUrl(String name, boolean isPublic) throws InternalError {
         if (isPublic) return ImageRepositoryImpl.SERVER_URL + "/" + PUBLIC_BUCKET + "/" + name;
-        return customImageRepository.getPresignedUrl(name, PRIVATE_BUCKET);
+        return imageRepository.getPresignedUrl(name, PRIVATE_BUCKET);
     }
 
     public static String getPublicImageUrl(String name) {

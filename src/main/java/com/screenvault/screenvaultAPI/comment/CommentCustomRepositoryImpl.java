@@ -13,11 +13,11 @@ import org.springframework.data.mongodb.core.query.Update;
 import java.util.List;
 import java.util.UUID;
 
-public class CustomCommentRepositoryImpl implements CustomCommentRepository {
+public class CommentCustomRepositoryImpl implements CommentCustomRepository {
 
     private final MongoTemplate mongoTemplate;
 
-    public CustomCommentRepositoryImpl(MongoTemplate mongoTemplate) {
+    public CommentCustomRepositoryImpl(MongoTemplate mongoTemplate) {
         this.mongoTemplate = mongoTemplate;
 
         mongoTemplate.setWriteResultChecking(WriteResultChecking.EXCEPTION);

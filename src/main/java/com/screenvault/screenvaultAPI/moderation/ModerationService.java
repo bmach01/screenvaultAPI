@@ -7,18 +7,18 @@ import java.io.IOException;
 import java.util.*;
 
 @Service
-public class VerificationService {
+public class ModerationService {
 
     private static final String[] VALID_IMAGE_TYPES = { "image/jpeg", "image/png", "image/svg+xml", "image/webp" };
 
-    private final VerificationRepo verificationRepo;
+    private final ModerationRepository moderationRepository;
 
-    public VerificationService(VerificationRepo verificationRepo) {
-        this.verificationRepo = verificationRepo;
+    public ModerationService(ModerationRepository moderationRepository) {
+        this.moderationRepository = moderationRepository;
     }
 
     public boolean isImageFlagged(String imageB64) throws InternalError, IllegalArgumentException {
-        return verificationRepo.getImageModerationResponse(imageB64).results().getFirst().flagged();
+        return moderationRepository.getImageModerationResponse(imageB64).results().getFirst().flagged();
     }
 
     public String encodeImageToB64(MultipartFile image) throws InternalError, IllegalArgumentException {
@@ -34,7 +34,7 @@ public class VerificationService {
     }
 
     public Set<String> getImageTags(String imageB64) throws InternalError, IllegalArgumentException  {
-        TagsResponseBody response = verificationRepo.getImageTags(imageB64);
+        TagsResponseBody response = moderationRepository.getImageTags(imageB64);
         System.out.println(response.toString());
 
         if (response.choices().getFirst().message().refusal() != null)

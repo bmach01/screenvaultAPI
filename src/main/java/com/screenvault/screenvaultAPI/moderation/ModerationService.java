@@ -40,7 +40,7 @@ public class ModerationService {
         if (response.choices().getFirst().message().refusal() != null)
             throw new InternalError("Internal error. Try again later.");
 
-        if (response.choices().getFirst().message().content().equals("I'm sorry, I can't assist with that."))
+        if (response.choices().getFirst().message().content().equals("I'm sorry, but I can't assist with that."))
             return new HashSet<>(List.of("EXPLICIT"));
 
         Set<String> tags = new HashSet<String>();

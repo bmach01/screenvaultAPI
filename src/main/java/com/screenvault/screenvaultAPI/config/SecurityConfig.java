@@ -39,7 +39,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
                 .cors(Customizer.withDefaults())
-                .csrf(AbstractHttpConfigurer::disable) // TODO: to be decided
+                .csrf(Customizer.withDefaults())
                 .authorizeHttpRequests(request -> {
                           //  request.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll(); // Allow preflight requests
                             CONTROLLERS.forEach(controller -> request.requestMatchers(

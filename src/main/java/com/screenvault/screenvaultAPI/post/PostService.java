@@ -91,6 +91,7 @@ public class PostService {
 
         try {
             post.setPosterUsername(username);
+            imageService.uploadImage(post.getId().toString(), image, post.isPublic());
             savedPost = postRepository.save(post);
         }
         catch (OptimisticLockingFailureException e) {

@@ -60,10 +60,14 @@ public class AuthenticationController {
         Cookie tokenCookie = new Cookie(JwtType.ACCESS_TOKEN.name(), data.token());
         tokenCookie.setHttpOnly(true);
         tokenCookie.setPath("/");
+        tokenCookie.setSecure(true);
+        tokenCookie.setAttribute("SameSite", "None");
 
         Cookie refreshCookie = new Cookie(JwtType.REFRESH_TOKEN.name(), data.refreshToken());
         refreshCookie.setHttpOnly(true);
         refreshCookie.setPath("/authentication/noAuth/refreshToken");
+        refreshCookie.setSecure(true);
+        refreshCookie.setAttribute("SameSite", "None");
 
         response.addCookie(tokenCookie);
         response.addCookie(refreshCookie);
@@ -90,6 +94,9 @@ public class AuthenticationController {
         Cookie tokenCookie = new Cookie(JwtType.ACCESS_TOKEN.name(), newToken);
         tokenCookie.setPath("/");
         tokenCookie.setHttpOnly(true);
+        tokenCookie.setSecure(true);
+        tokenCookie.setAttribute("SameSite", "None");
+
         response.addCookie(tokenCookie);
 
         return ResponseEntity.ok(

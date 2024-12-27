@@ -104,11 +104,15 @@ public class AuthenticationService {
         tokenCookie.setHttpOnly(true);
         tokenCookie.setPath("/");
         tokenCookie.setMaxAge(0);
+        tokenCookie.setSecure(true);
+        tokenCookie.setAttribute("SameSite", "None");
 
         Cookie refreshCookie = new Cookie(JwtType.REFRESH_TOKEN.name(), null);
         refreshCookie.setHttpOnly(true);
         refreshCookie.setPath("/authentication/noAuth/refreshToken");
         refreshCookie.setMaxAge(0);
+        refreshCookie.setSecure(true);
+        refreshCookie.setAttribute("SameSite", "None");
 
         response.addCookie(tokenCookie);
         response.addCookie(refreshCookie);

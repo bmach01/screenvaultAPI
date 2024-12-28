@@ -2,6 +2,7 @@ package com.screenvault.screenvaultAPI.config;
 
 import com.screenvault.screenvaultAPI.config.filter.JwtAuthenticationFilter;
 import com.screenvault.screenvaultAPI.user.UserDetailsServiceImpl;
+import com.screenvault.screenvaultAPI.user.UserRole;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -39,12 +40,13 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
                 .cors(Customizer.withDefaults())
-                .csrf(AbstractHttpConfigurer::disable) // TODO: to be decided
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> {
                           //  request.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll(); // Allow preflight requests
                             CONTROLLERS.forEach(controller -> request.requestMatchers(
                                     "/" + controller + "/noAuth/**"
                             ).permitAll());
+                            request.requestMatchers("/admin/**").hasRole(UserRole.ADMIN.name());
 
                             request.anyRequest().authenticated();
                         }

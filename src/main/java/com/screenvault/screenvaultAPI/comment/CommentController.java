@@ -48,6 +48,7 @@ public class CommentController {
 
     @PostMapping("/postComment")
     public ResponseEntity<CommentResponseBody> postCommentUnderPost(
+            @RequestHeader("X-CSRF-TOKEN") String csrfToken,
             @RequestBody PostCommentRequestBody requestBody,
             Principal principal
     ) {

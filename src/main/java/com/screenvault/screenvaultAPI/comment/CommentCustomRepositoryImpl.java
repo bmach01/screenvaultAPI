@@ -26,7 +26,7 @@ public class CommentCustomRepositoryImpl implements CommentCustomRepository {
     @Override
     public Page<Comment> findReported(Pageable pageable) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("reportCount").gt(0));
+        query.addCriteria(Criteria.where("reportCount").gt(0).and("isDeleted").ne(true));
         query.with(Sort.by(Sort.Direction.DESC, "reportCount"));
         query.with(pageable);
         List<Comment> comments = mongoTemplate.find(query, Comment.class);

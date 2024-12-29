@@ -46,7 +46,7 @@ public class SecurityConfig {
                             CONTROLLERS.forEach(controller -> request.requestMatchers(
                                     "/" + controller + "/noAuth/**"
                             ).permitAll());
-                            request.requestMatchers("/admin/**").hasRole(UserRole.ADMIN.name());
+                            request.requestMatchers("/admin/**").hasAuthority(UserRole.ADMIN.name());
 
                             request.anyRequest().authenticated();
                         }

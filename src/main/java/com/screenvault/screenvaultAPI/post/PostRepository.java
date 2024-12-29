@@ -22,7 +22,7 @@ public interface PostRepository extends PostCustomRepository, PagingAndSortingRe
     @Query(fields = "{ 'tags': 0, 'collectionIds': 0, 'reportCount': 0, 'isDeleted': 0 }")
     Page<Post> findAllByIsPublicAndTagsIn(boolean isPublic, Set<String> tags, Pageable pageable);
 
-    @Query(value = "{ 'reportCount': { $gt: 0 } }", fields = "{ 'collectionIds': 0, 'isDeleted': 0 }")
+    @Query(value = "{ 'reportCount': { $gt: 0 }, 'isDeleted': { $ne: true } }", fields = "{ 'collectionIds': 0, 'isDeleted': 0 }")
     Page<Post> findByReportsGreaterThanZero(Pageable pageable);
 
     @Query(value = "{ 'isDeleted': { $ne: true }, '_id': ?0 }",

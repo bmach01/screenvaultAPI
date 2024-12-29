@@ -120,7 +120,6 @@ public class AdminController {
             @RequestParam int pageSize
     ) {
         Page<Post> posts = null;
-
         try {
             posts = adminService.getPageOfReportedPosts(page, pageSize);
         }

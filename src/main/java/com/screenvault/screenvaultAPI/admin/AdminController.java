@@ -95,7 +95,7 @@ public class AdminController {
             @RequestBody ManageObjectRequestBody requestBody
     ) {
         try {
-            adminService.deleteComment(requestBody.postId());
+            adminService.deleteComment(requestBody.commentId());
         }
         catch (InternalError e) {
             return ResponseEntity.internalServerError().body(

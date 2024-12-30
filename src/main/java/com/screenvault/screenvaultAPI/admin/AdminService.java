@@ -4,6 +4,7 @@ import com.screenvault.screenvaultAPI.comment.Comment;
 import com.screenvault.screenvaultAPI.comment.CommentRepository;
 import com.screenvault.screenvaultAPI.image.ImageService;
 import com.screenvault.screenvaultAPI.post.Post;
+import com.screenvault.screenvaultAPI.post.PostAsyncService;
 import com.screenvault.screenvaultAPI.post.PostRepository;
 import com.screenvault.screenvaultAPI.report.ReportRepository;
 import com.screenvault.screenvaultAPI.user.User;
@@ -26,19 +27,22 @@ public class AdminService {
     private final CommentRepository commentRepository;
     private final ReportRepository reportRepository;
     private final ImageService imageService;
+    private final PostAsyncService postAsyncService;
 
     public AdminService(
             UserRepository userRepository,
             PostRepository postRepository,
             CommentRepository commentRepository,
             ReportRepository reportRepository,
-            ImageService imageService
+            ImageService imageService,
+            PostAsyncService postAsyncService
     ) {
         this.userRepository = userRepository;
         this.postRepository = postRepository;
         this.commentRepository = commentRepository;
         this.reportRepository = reportRepository;
         this.imageService = imageService;
+        this.postAsyncService = postAsyncService;
     }
 
     public void banUser(String username) throws InternalError, IllegalArgumentException, NoSuchElementException {
@@ -79,6 +83,7 @@ public class AdminService {
         try {
             Comment comment = commentRepository.findById(commentId).orElseThrow();
             comment.setDeleted(true);
+            postAsyncService.decrementCommentCountAndSave(comment.getPostId());
             commentRepository.save(comment);
         }
         catch (OptimisticLockingFailureException e) {

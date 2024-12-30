@@ -43,7 +43,7 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return status != UserStatus.BANNED;
+        return status == UserStatus.INACTIVE;
     }
 
     @Override
@@ -53,7 +53,7 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return status != UserStatus.INACTIVE;
+        return status != UserStatus.BANNED;
     }
 
     @Override

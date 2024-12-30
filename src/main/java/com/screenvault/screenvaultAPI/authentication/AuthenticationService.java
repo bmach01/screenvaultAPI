@@ -83,6 +83,9 @@ public class AuthenticationService {
         if (!passwordEncoder.matches(split[1], user.getPassword()))
             throw new BadCredentialsException("Invalid credentials or account does not exist.");
 
+        if (!user.isEnabled())
+            throw new BadCredentialsException("Account has been banned.");
+
         String token = jwtService.generateToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
         user.setStatus(UserStatus.ACTIVE);

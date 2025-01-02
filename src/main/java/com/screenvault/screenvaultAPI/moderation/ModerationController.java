@@ -29,8 +29,16 @@ public class ModerationController {
 
             if (!flagged) {
                 Set<String> tags = moderationService.getImageTags(imageB64);
+                boolean secondStepFlagged = false;
 
-                if (!tags.contains("EXPLICIT"))
+                for (String tag : tags) {
+                    if (!tag.contains("#")) {
+                        secondStepFlagged = true;
+                        break;
+                    }
+                }
+
+                if (!secondStepFlagged)
                     return ResponseEntity.ok(new VerificationAndTagsResponseBody(
                             "Successfully checked image for illegal content and generated tags.",
                             true,

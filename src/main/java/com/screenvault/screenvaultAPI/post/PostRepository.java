@@ -12,7 +12,8 @@ import java.util.UUID;
 
 public interface PostRepository extends PostCustomRepository, PagingAndSortingRepository<Post, UUID>, MongoRepository<Post, UUID> {
     @Query(value = "{ 'isDeleted': { $ne: true }, 'isPublic': ?0 }",
-            fields = "{ 'tags': 0, 'collectionIds': 0, 'reportCount': 0, 'isDeleted': 0 }")
+          fields = "{ 'tags': 0, 'collectionIds': 0, 'reportCount': 0, 'isDeleted': 0 }",
+          sort = "{ 'postedOn': -1 }")
     Page<Post> findAllByIsPublic(boolean isPublic, Pageable pageable);
 
     @Query(value = "{ 'isPublic': ?0, 'title': { $regex: ?1, $options: 'i' } }",

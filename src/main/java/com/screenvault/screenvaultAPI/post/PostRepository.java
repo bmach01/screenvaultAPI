@@ -17,13 +17,15 @@ public interface PostRepository extends PostCustomRepository, PagingAndSortingRe
     Page<Post> findAllByIsPublic(boolean isPublic, Pageable pageable);
 
     @Query(value = "{ 'isPublic': ?0, 'title': { $regex: ?1, $options: 'i' } }",
-            fields = "{ 'tags': 0, 'collectionIds': 0, 'reportCount': 0, 'isDeleted': 0 }")
+            fields = "{ 'tags': 0, 'collectionIds': 0, 'reportCount': 0, 'isDeleted': 0 }",
+            sort = "{ 'postedOn': -1 }")
     Page<Post> findAllByIsPublicAndTitleContaining(boolean isPublic, String title, Pageable pageable);
 
-    @Query(fields = "{ 'tags': 0, 'collectionIds': 0, 'reportCount': 0, 'isDeleted': 0 }")
+    @Query(fields = "{ 'tags': 0, 'collectionIds': 0, 'reportCount': 0, 'isDeleted': 0 }", sort = "{ 'postedOn': -1 }")
     Page<Post> findAllByIsPublicAndTagsIn(boolean isPublic, Set<String> tags, Pageable pageable);
 
-    @Query(value = "{ 'reportCount': { $gt: 0 }, 'isDeleted': { $ne: true } }", fields = "{ 'collectionIds': 0, 'isDeleted': 0 }")
+    @Query(value = "{ 'reportCount': { $gt: 0 }, 'isDeleted': { $ne: true } }", fields = "{ 'collectionIds': 0, 'isDeleted': 0 }",
+            sort = "{ 'reportCount': -1 }")
     Page<Post> findByReportsGreaterThanZero(Pageable pageable);
 
     @Query(value = "{ 'isDeleted': { $ne: true }, '_id': ?0 }",
